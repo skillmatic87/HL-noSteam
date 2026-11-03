@@ -1,12 +1,20 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)][string]$Command
+    [Parameter(Mandatory = $true)][string]$Command,
+    [string]$ServerDirectory
 )
 
 $ErrorActionPreference = 'Stop'
-$serverRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 's'
-$password = (Get-Content -LiteralPath (Join-Path $serverRoot 'test-rcon.secret') -Raw).Trim()
-if ($password -notmatch '^[a-f0-9]{20}$') { throw 'Invalid local test credential.' }
+$serverRoot = if ($ServerDirectory) { (Resolve-Path -LiteralPath $ServerDirectory).Path } else { Join-Path (Split-Path -Parent $PSScriptRoot) 's' }
+if ($ServerDirectory) {
+    $localConfig = Get-Content -LiteralPath (Join-Path $serverRoot 'cstrike\server.cfg') -Raw
+    if ($localConfig -notmatch '(?m)^rcon_password\s+"([a-f0-9]{32})"') { throw 'No generated local control credential was found.' }
+    $password = $Matches[1]
+    $localConfig = $null
+} else {
+    $password = (Get-Content -LiteralPath (Join-Path $serverRoot 'test-rcon.secret') -Raw).Trim()
+}
+if ($password -notmatch '^(?:[a-f0-9]{20}|[a-f0-9]{32})$') { throw 'Invalid local test credential.' }
 
 $socket = New-Object System.Net.Sockets.UdpClient
 $socket.Client.ReceiveTimeout = 1500

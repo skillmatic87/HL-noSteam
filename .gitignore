@@ -3,6 +3,7 @@
 !/.gitignore
 !/.gitattributes
 !/README.md
+!/Setup.cmd
 !/docs/
 !/scripts/
 

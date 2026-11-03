@@ -20,6 +20,7 @@ Research date: 2026-11-03. Downloaded, inspected, installed and runtime-tested a
 | Component | Source | Current state |
 | --- | --- | --- |
 | StatsMe 2.8.3 | [Original files](https://sourceforge.net/projects/statsme/files/StatsMe/v2.8.3/) | Binary, configuration, GPL text and source downloaded |
+| StatsMe 2.7.0 | [Original binary archive](https://sourceforge.net/projects/statsme/files/OldFiles/statsme-2.7-cstrike.zip/) and [source archive](https://sourceforge.net/projects/statsme/files/StatsMe/v2.7.0/) | Selected original CS-specific build; avoids the 2.8.3 game-directory regression |
 | ClanMod 1.82b1 | [Original files](https://sourceforge.net/projects/clanmod/files/ClanMod/ClanMod%201.82b1/) | Downloaded admin-menu candidate |
 | AMX Mod X 1.8.1 | [Original base package](https://sourceforge.net/projects/amxmodx/files/AMX%20Mod%20X%20Base/1.8.1/) | Downloaded; SHA-256 matches project page |
 | AMXX compatibility | [Official 1.8.2 notes](https://wiki.alliedmods.net/Amx_mod_x_1.8.2_release_notes) | Historical engine/module compatibility needs testing |
@@ -29,6 +30,7 @@ Research date: 2026-11-03. Downloaded, inspected, installed and runtime-tested a
 | Sank Sounds | [Author's source](https://github.com/ZTHawk/HL1_SankSounds) and [original discussion](https://forums.alliedmods.net/archive/index.php/t-5055.html) | Version 1.9.1 source compiles with AMXX 1.8.1 and loads 14 sound entries |
 | Classic sound pack | [StatsMe Soundpack 1.0](https://sourceforge.net/projects/statsme/files/StatsMe%20Add-Ons/Soundpack%201.0/) | 14 WAV files downloaded; PCM, mono, 11025/22050 Hz, 8/16 bit |
 | YaPB | [Releases](https://github.com/yapb/yapb/releases) and [supported engines](https://yapb.github.io/docs/en/getting-started/introduction/) | Windows 4.4.957 runs two test bots on de_dust and de_dust2 |
+| Additional YaPB graphs | [Official graph database](https://github.com/yapb/graph) | as_tundra and de_vegas added; CC BY-SA 4.0 license, credits and README downloaded with them |
 
 ## Inspection tooling
 
@@ -48,3 +50,5 @@ Research date: 2026-11-03. Downloaded, inspected, installed and runtime-tested a
 | `soundpack.zip` | `9d4d82f6410096ee8bb9ced4404fccbec583c5b15daf4987b14838871ab3774a` |
 
 Local hashes identify inspected files. Independent matching references are recorded only where checked; a computed hash alone does not prove authenticity. HTML returned by failed downloads is excluded from candidate packages.
+
+The installer uses the exact URLs, revisions and hashes in [components.json](../scripts/components.json). CS 1.5, Map Manager, Sank Sounds and the extra graphs are pinned to commit IDs rather than moving branch names. Previously recorded branch-archive hashes above remain research records; they are not substituted for the pinned installer hashes.

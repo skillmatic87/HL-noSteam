@@ -15,7 +15,7 @@ Review the license supplied with the actual server package. Its distribution pro
 | Feature | Existing component being evaluated | Current evidence |
 | --- | --- | --- |
 | GoldSrc plugin loader | Metamod-P 1.21p109 | Loads the selected Windows plugins |
-| Statistics and local ranking | StatsMe 2.8.3 | Records kills; saved ranking survives map changes and a process restart |
+| Statistics and local ranking | StatsMe 2.7.0, original CS-specific build | Records damage, shots, hits and kills; ranking records survive a process restart unchanged |
 | Admin menu | AMX Mod X 1.8.1 | Stock admin/menu plugins load; client permission checks pending |
 | Votes and nominations | Mistrick Map Manager 2.5.61 | Compiles with a small CS 1.5 round-event adaptation; five-minute setting active |
 | Chat sounds | Sank Sounds 1.9.1 | Compiles and loads 14 classic StatsMe sound-pack entries; client playback pending |
@@ -42,7 +42,9 @@ Prepare a versioned Windows download with English instructions, launch/configura
 
 Test the package after fresh extraction. Configuration fragments alone are not the final deliverable.
 
-StatsMe stores the game directory in a 32-byte buffer and expects a bare mod name for game detection. The old engine supplies an absolute path. The shorter test path allowed ranking persistence, but is itself 32 bytes and exceeds safe storage including the terminator. Resolve the path handling and CS-specific detection before release; a saved ranking alone does not verify the complete statistics integration. See [test results](TESTING.md).
+The rejected StatsMe 2.8.3 build mishandles the old engine's absolute game directory. The original CS-specific 2.7.0 binary uses the fixed mod name `cstrike`, avoiding that regression without a custom StatsMe patch. A fresh installation under a long directory path loads successfully. See [test results](TESTING.md).
+
+The preview installer now downloads pinned components, verifies checksums, assembles a new server, compiles the existing Pawn plugins and configures local credentials. It includes all 26 original maps and downloads the two missing YaPB graph files. It has passed a fresh-folder installation test; packaging the final offline distribution and human-client acceptance remain open.
 
 ## 5. Verify the result
 

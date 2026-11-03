@@ -2,7 +2,19 @@
 
 A downloadable **Counter-Strike 1.5 dedicated server package for Windows LAN games with 32 player slots**.
 
-**Status: in development. No ready-to-use server package has been released yet.** An isolated test server starts with 32 slots, StatsMe, bots, the admin plugins, Map Manager and Sank Sounds. Client acceptance tests and release packaging remain open.
+**Status: preview installer available; client acceptance tests remain open.** A fresh installation starts with 32 slots, StatsMe, bots, the admin plugins, Map Manager and Sank Sounds. This is not yet a fully accepted release.
+
+## Install the preview
+
+1. [Download the repository ZIP](https://github.com/skillmatic87/HL-noSteam/archive/refs/heads/main.zip) and extract it into a writable folder.
+2. Run `Setup.cmd`. The first setup downloads about 300 MB of original components and verifies every file against its SHA-256 checksum.
+3. Read and accept the supplied server license, then enter your game rules and administrator player name. Unanswered project preferences are not silently selected.
+4. Open `CS15Server/ADMIN.local.txt` for your unique administrator credentials.
+5. Run `CS15Server/Start-CS15.cmd` and connect using a compatible CS 1.5 client on the LAN.
+
+Setup requires 64-bit Windows with PowerShell 5.1, `curl.exe` and `tar.exe`; only the current development PC has been tested. It installs into a new `CS15Server` folder and refuses to overwrite an existing installation. Initial setup needs Internet access; later setup attempts can reuse verified cached downloads. It does not install a game client or change firewall settings.
+
+See [installation and operation](docs/INSTALL.md) for commands, configuration, cached setup and remaining test limitations. This preview downloads third-party files from their recorded sources; it is not a fully offline ZIP containing all game binaries.
 
 ## First release
 
@@ -16,11 +28,12 @@ The package should be easy to install by downloading, extracting and copying fil
 - An admin menu restricted to authenticated administrators.
 - Chat-triggered sounds audible to all players.
 
-Existing server mods will be assembled and configured. The complete server distribution can be included where its applicable distribution terms permit this. Packaging and compatibility checks are ongoing.
+The installer assembles existing server mods and compiles the two Pawn plugins using the included upstream AMXX compiler. The only plugin source adaptation changes Map Manager's new-round event for CS 1.5. StatsMe uses its original, unmodified CS-specific 2.7.0 binary.
 
 ## Project documents
 
 - [Delivery requirements and acceptance checks](docs/DELIVERY.md)
+- [Installation and operation](docs/INSTALL.md)
 - [Implementation plan](docs/PLAN.md)
 - [Open questions](docs/OPEN-QUESTIONS.md)
 - [Sources and compatibility notes](docs/SOURCES.md)

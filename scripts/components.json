@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {"id":"server","file":"hlserver4110.exe","url":"https://archive.org/download/goldsrc_hlds_won_windows/hlds-win/hlserver4110.exe","sha256":"178fdf8a3d43ab91063ccb83be05be0457c98db348fc28eba6b9c9ea4e5dc849"},
+    {"id":"cs15","file":"cs15-pinned.zip","url":"https://codeload.github.com/Ch0wW/counterstrike-betas/zip/f5837cb509ef09f9352ec8960258893a4c8bf2df","sha256":"424b2ca7991947c87e02b4cfc9d87c0940138753a627f4b453540e1f3324ccbe"},
+    {"id":"metamod","file":"metamod-p-v1.21p109-win32.tar.xz","url":"https://github.com/Bots-United/metamod-p/releases/download/v1.21p109/metamod-p-v1.21p109-win32.tar.xz","sha256":"564838d9a42032ee3bc44eeb2616896e0789c3ce8d7a033d81f3f795b67e31ed"},
+    {"id":"amxx","file":"amxmodx-1.8.1-base.zip","url":"https://master.dl.sourceforge.net/project/amxmodx/AMX%20Mod%20X%20Base/1.8.1/amxmodx-1.8.1-base.zip?viasf=1","sha256":"8d5d07361f3479e38f2392d209fad7032f755b57aa70c38c0310f98313a610c3"},
+    {"id":"statsme","file":"statsme-2.7-cstrike.zip","url":"https://master.dl.sourceforge.net/project/statsme/OldFiles/statsme-2.7-cstrike.zip?viasf=1","sha256":"206d63c9b131a279824384207b816788458499039dce528d5f2ea06f5ff4d215"},
+    {"id":"statsmeSource","file":"statsme-2.7-src.zip","url":"https://master.dl.sourceforge.net/project/statsme/StatsMe/v2.7.0/statsme-2.7-src.zip?viasf=1","sha256":"a44e619fb8dc1d321b6f74972b2dbcc09623663f695d58986fac6e22741f8323"},
+    {"id":"sank","file":"sank-pinned.zip","url":"https://codeload.github.com/ZTHawk/HL1_SankSounds/zip/ed02c30bed512994b98e208c644c1e366b5209e3","sha256":"17f28e0828ce0a06f262c986c7464817d1134a6f6e1660f1dfc02063610fdf93"},
+    {"id":"mapmanager","file":"mapmanager-pinned.zip","url":"https://codeload.github.com/Mistrick/MapManager/zip/ed09e4d78ab5c6cb617b2e37c06a08df2cea7648","sha256":"09eebb05eb8b3c601e041f21b80cfef0ba364bca55d898b2ae76fdd84637de99"},
+    {"id":"bots","file":"yapb-4.4.957-windows.zip","url":"https://github.com/yapb/yapb/releases/download/4.4.957/yapb-4.4.957-windows.zip","sha256":"c32a5b4d77c08c3c59c417568c5719f9227238c6d627d478cfb1d9f7d9c113f4"},
+    {"id":"sounds","file":"statsme-soundpack.zip","url":"https://master.dl.sourceforge.net/project/statsme/StatsMe%20Add-Ons/Soundpack%201.0/soundpack.zip?viasf=1","sha256":"9d4d82f6410096ee8bb9ced4404fccbec583c5b15daf4987b14838871ab3774a"},
+    {"id":"unpacker","file":"WiseUnpacker_3.0.0_win-x64.zip","url":"https://github.com/mnadareski/WiseUnpacker/releases/download/3.0.0/WiseUnpacker_3.0.0_net10.0_win-x64_release.zip","sha256":"93d94ea9fabfc2950f1b82dcb63f52b5462f3c3319f828372fde079c3dda0295"},
+    {"id":"graphTundra","file":"as_tundra.graph","url":"https://raw.githubusercontent.com/yapb/graph/50524d2fd16ffa4c85b1d77fa8d58f6ee410c214/graph/as_tundra.graph","sha256":"12ddfe8923e7b1c0598abbffe157c07bb541af6971a2f964ea59a16b22a112c5"},
+    {"id":"graphVegas","file":"de_vegas.graph","url":"https://raw.githubusercontent.com/yapb/graph/50524d2fd16ffa4c85b1d77fa8d58f6ee410c214/graph/de_vegas.graph","sha256":"2e78e45b98a698bf779491ec8703127b1637f5dba865f8a3ecf1ccd87b7eddda"},
+    {"id":"graphLicense","file":"yapb-graph-license.txt","url":"https://raw.githubusercontent.com/yapb/graph/50524d2fd16ffa4c85b1d77fa8d58f6ee410c214/LICENSE-GRAPH","sha256":"23ee78c8bae49cf08ea2f0c84945c66b987ebe4520881fb51b3dad4fb43d07c2"},
+    {"id":"graphCredits","file":"yapb-graph-credits.md","url":"https://raw.githubusercontent.com/yapb/graph/50524d2fd16ffa4c85b1d77fa8d58f6ee410c214/CREDITS.md","sha256":"71c6dc806a7a7618ae80f4ba6f6a4bded0e4618607f606bf98d40c8b5a76027f"},
+    {"id":"graphReadme","file":"yapb-graph-readme.md","url":"https://raw.githubusercontent.com/yapb/graph/50524d2fd16ffa4c85b1d77fa8d58f6ee410c214/README.md","sha256":"dd70220592ac3bb1be8669ee2bcd29cefde459cb1aa90d1ebde82f7fdb2e7a6e"}
+  ]
+}

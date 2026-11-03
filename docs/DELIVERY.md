@@ -6,7 +6,7 @@ Build an English-language Windows package for a **Counter-Strike 1.5 dedicated L
 
 Use existing server mods. Required features are StatsMe, a ranking saved on this server, map nominations, a map vote five minutes before the map ends, maps, bots, an administrator-only menu, and chat sounds audible to all players. Sank Sounds has been accepted as the chat-sound plugin candidate.
 
-The server distribution may be bundled if its applicable distribution terms permit this. The exact packaging method is still being verified. A finished server package is not available yet.
+The preview currently supplies setup scripts that download verified original components, then assemble a new installation locally. A fully offline distribution and full client acceptance are still pending. The original HLDS installer and its license are preserved by setup.
 
 ## Intended user flow
 

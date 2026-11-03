@@ -7,10 +7,7 @@ $researchRoot = Join-Path $projectRoot 'downloads\research'
 $serverRoot = Join-Path $projectRoot 's'
 $gameRoot = Join-Path $serverRoot 'cstrike'
 
-# The original StatsMe binary has a 32-byte game-directory buffer.
-if ([System.Text.Encoding]::Default.GetByteCount($gameRoot) -gt 31) {
-    throw 'StatsMe requires a game-directory path of at most 31 bytes for this test.'
-}
+# The CS-specific StatsMe 2.7 build uses a fixed mod name rather than an engine path.
 
 if (-not (Test-Path -LiteralPath (Join-Path $serverRoot 'hlds.exe'))) {
     throw 'The isolated baseline server must be prepared first.'
@@ -33,7 +30,7 @@ if (Test-Path -LiteralPath $pidFile) {
 & tar -xf (Join-Path $researchRoot 'metamod-p-v1.21p109-win32.tar.xz') -C $gameRoot
 if ($LASTEXITCODE -ne 0) { throw 'Metamod extraction failed.' }
 Copy-Item -LiteralPath (Join-Path $researchRoot 'amxx181\addons') -Destination $gameRoot -Recurse -Force
-Expand-Archive -LiteralPath (Join-Path $researchRoot 'statsme-2.8.3-cstrike-curl.zip') -DestinationPath $gameRoot -Force
+Expand-Archive -LiteralPath (Join-Path $researchRoot 'statsme-2.7-cstrike.zip') -DestinationPath $gameRoot -Force
 Copy-Item -LiteralPath (Join-Path $researchRoot 'yapb\addons') -Destination $gameRoot -Recurse -Force
 
 $amxxRoot = Join-Path $gameRoot 'addons\amxmodx'
@@ -103,7 +100,7 @@ sank_sounds.amxx
 
 @'
 win32 addons/amxmodx/dlls/amxmodx_mm.dll
-win32 addons/statsme/dlls/statsme_mm.dll
+win32 addons/statsme/dlls/sm_cstrike_mm.dll
 win32 addons/yapb/bin/yapb.dll
 '@ | Set-Content -LiteralPath (Join-Path $gameRoot 'addons\metamod\plugins.ini') -Encoding ascii
 
