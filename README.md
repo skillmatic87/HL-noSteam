@@ -1,24 +1,35 @@
 # HL-noSteam
 
-Planung und Konfiguration fuer Half-Life und Counter-Strike 1.5 mit Dedicated Servern.
+A downloadable **Counter-Strike 1.5 dedicated server package for Windows LAN games with 32 player slots**.
 
-Status: Bestandsaufnahme und Recherche. Spielupdates, Modinstallation und Serverbetrieb sind noch nicht umgesetzt. Die offenen Anforderungen werden mit dem Betreiber geklaert, bevor daraus eine konkrete Zielkonfiguration entsteht.
+**Status: in development. No ready-to-use server package has been released yet.** Original components have been downloaded for evaluation; the assembled server has not passed its runtime checks.
 
-## Bestaetigter Ist-Stand
+## First release
 
-- Lokales Half-Life: **1.1.0.8**. Belege: Windows-Dateiversion von `hl.exe` und Versionsangabe in der mitgelieferten `readme.txt`.
-- `hlds.exe` und eine Half-Life-Konfiguration fuer Dedicated Server sind vorhanden. Die Laufzeitversion des Servers ist noch nicht geprueft.
-- Spielverzeichnisse `valve`, `tfc` und `dmc` sind vorhanden. Ein `cstrike`-Verzeichnis war bei der Bestandsaufnahme nicht vorhanden.
-- Die lokale Struktur enthaelt WON-Komponenten. Herkunft, Lizenz, Sprache und Laufzeit-Build bleiben zu klaeren.
-- Gewuenschter GitHub-Zielname: **skillmatic87/HL-noSteam**, oeffentlich.
+The package should be easy to install by downloading, extracting and copying files. It must include:
 
-Die Versionsangabe 1.1.0.8 stammt aus den lokalen Dateien; das Spiel wurde fuer diese Pruefung nicht gestartet.
+- CS 1.5 dedicated server configuration for Windows and LAN play.
+- 32 configured player slots.
+- StatsMe and a persistent ranking stored on this server.
+- A map vote five minutes before the map ends, with player nominations.
+- Maps and bots.
+- An admin menu restricted to authenticated administrators.
+- Chat-triggered sounds audible to all players.
 
-## Unterlagen
+Existing server mods will be assembled and configured. The complete server distribution can be included where its applicable distribution terms permit this. Packaging and compatibility checks are ongoing.
 
-- [Recherche und Umsetzungsphasen](docs/PLAN.md)
-- [Offene Entscheidungen](docs/FRAGEN.md)
-- [Quellen und Kompatibilitaetsgrenzen](docs/QUELLEN.md)
-- [Lesende Bestandsaufnahme](scripts/Get-HalfLifeInventory.ps1)
+## Project documents
 
-Dieses Repository versioniert Projektdokumentation und eigene Skripte. Die bestehende Spielinstallation, Installationsprotokolle, Zugangsdaten, Downloads und Spielassets werden nicht veroeffentlicht. Es enthaelt derzeit keine lauffaehige Serverbereitstellung.
+- [Delivery requirements and acceptance checks](docs/DELIVERY.md)
+- [Implementation plan](docs/PLAN.md)
+- [Open questions](docs/OPEN-QUESTIONS.md)
+- [Sources and compatibility notes](docs/SOURCES.md)
+- [Read-only Half-Life inventory script](scripts/Get-HalfLifeInventory.ps1)
+
+All project documentation, filenames, comments and messages are maintained in English.
+
+## Initial local inventory
+
+The existing Half-Life installation reports **1.1.0.8**, confirmed by the Windows file version of `hl.exe` and the supplied `readme.txt`. It contains `hlds.exe`, `valve`, `tfc` and `dmc`; no `cstrike` directory was present during the initial inventory. File inspection did not establish a running engine build.
+
+Research downloads and test installations are kept outside the tracked project files. Credentials, operator logs, saved rankings and private configuration are not published.
