@@ -33,10 +33,9 @@ A proposal has been submitted but is not yet approved: 30-minute maps, Friendly 
 ## Questions to resolve through inspection and testing
 
 - Which Windows HLDS package and accompanying distribution terms can be used?
-- Can a fresh downloadable package reproduce the tested combination without research files already present?
 - Do client tests confirm Map Manager nominations, Sank Sounds playback and administrator permissions?
 - Are all component distribution notices and corresponding source requirements covered by the final package?
-- Does the bot package have navigation data for each included map?
+- Is bot navigation good enough across every included map? All 26 graph files are now present; only some maps have gameplay checks.
 - Does name-based LAN ranking meet the operator's needs when human players change or share names?
 
 The current installer uses HLDS 4.1.1.0, AMXX 1.8.1, the original CS-specific StatsMe 2.7.0, Map Manager 2.5.61 with a CS 1.5 round-event adaptation, Sank Sounds 1.9.1, the 14-file StatsMe sound pack and YaPB 4.4.957. A fresh server installation, automatic voting and preserved ranking records have been observed; see [test results](TESTING.md). The setup wizard asks for operator choices rather than treating an unanswered proposal as approved.

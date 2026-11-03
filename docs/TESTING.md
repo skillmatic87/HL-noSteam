@@ -11,8 +11,10 @@ The original local Half-Life client remains unchanged. The isolated baseline use
 | Check | Result |
 | --- | --- |
 | Fresh-folder installation | Passed: original server extraction, CS files, plugin compilation, local configuration and launcher generated without files from the existing game installation |
+| Public GitHub ZIP | Commit f0c94f7 downloaded, extracted and used to install a second server with verified cached components; it runs 32 slots, four modules, all 15 AMXX plugins and two bots |
 | Download integrity | All manifest components verified against their recorded SHA-256 hashes |
 | Invalid cache | A deliberately incorrect cached installer is rejected by SHA-256 verification before execution |
+| Network/cache paths | Missing graph/README files downloaded over HTTPS and verified; the remaining cache reused; an existing installation is refused before modification |
 | Engine startup and legacy UDP status query | Pass: CS 1.5, protocol 46, 32 advertised slots |
 | Plugin loader | Four running modules: AMXX 1.8.1.3746, StatsMe 2.7.0, YaPB 4.4.957 and FakeMeta |
 | AMXX plugin load | 15 running plugins, including stock admin/menu plugins, Map Manager and Sank Sounds |
@@ -26,7 +28,7 @@ The original local Half-Life client remains unchanged. The isolated baseline use
 | Sound files | All 14 are PCM mono WAVs, using 11025 or 22050 Hz and 8 or 16 bits |
 | AMXX runtime errors | No current error log found after replacing the incompatible round event |
 
-Client connection, nomination inclusion, ordinary-player/admin authorization, sound transfer, audible playback to multiple clients, navigation quality on every map, a second-PC LAN connection and 32-client load remain unverified. The Windows UI helper failed with `windows sandbox failed: helper_unknown_error: setup refresh had errors`; resetting it and retrying also failed. No client test is claimed on that basis.
+Client connection, nomination inclusion, ordinary-player/admin authorization, sound transfer, audible playback to multiple clients, navigation quality on every map, a second-PC LAN connection and 32-client load remain unverified. The Windows UI helper failed with `windows sandbox failed: helper_unknown_error: setup refresh had errors`; resetting it and retrying also failed. A command-line launch of an isolated copy of the existing 1.1.0.8 client did not establish a connection. Both client and server test processes were stopped; no client success is claimed.
 
 The stock map time limit and other upstream settings are used only for development. Temporary six-minute maps exercise vote timing; the two-bot quota and sound limits are test values. They do not resolve the operator choices in [open questions](OPEN-QUESTIONS.md).
 
