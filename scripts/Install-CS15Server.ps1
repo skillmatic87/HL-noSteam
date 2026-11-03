@@ -3,6 +3,7 @@ param(
     [string]$Destination,
     [string]$CacheDirectory,
     [string]$SettingsPath,
+    # Kept for older command lines; setup no longer prompts for license consent.
     [switch]$AcceptServerLicense
 )
 
@@ -12,19 +13,26 @@ if (-not $Destination) { $Destination = Join-Path $projectRoot 'CS15Server' }
 $Destination = [IO.Path]::GetFullPath($Destination)
 $incompleteMarker = Join-Path $Destination '.install-incomplete'
 $markerText = 'Setup is incomplete. Do not start this installation.'
+$resumeConfiguration = $false
 if (Test-Path -LiteralPath $Destination) {
     $existing = Get-Item -LiteralPath $Destination
     $expectedFiles = @('_setup','.install-incomplete','SERVER-LICENSE.txt')
     $unexpectedFiles = @(Get-ChildItem -LiteralPath $Destination -Force | Where-Object { $_.Name -notin $expectedFiles })
     if (-not $existing.PSIsContainer -or ($existing.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
         -not (Test-Path -LiteralPath $incompleteMarker -PathType Leaf) -or
-        (Get-Content -LiteralPath $incompleteMarker -Raw).Trim() -ne $markerText -or $unexpectedFiles.Count) {
-        throw 'The destination already contains an installation or other files. Setup only resumes a previous stop before license acceptance; choose a new destination for other cases.'
+        (Get-Content -LiteralPath $incompleteMarker -Raw).Trim() -ne $markerText) {
+        throw 'The destination already contains an installation or other files. Choose a new destination; existing installations are not overwritten.'
     }
     if (@(Get-ChildItem -LiteralPath $Destination -Recurse -Force | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }).Count) {
         throw 'Setup cannot resume a directory containing links or junctions. Choose a new destination.'
     }
-    Write-Host 'Resuming setup before license acceptance. Downloaded archives will be reused after verification.'
+    if ($unexpectedFiles.Count) {
+        $resumeConfiguration = & (Join-Path $PSScriptRoot 'Test-CS15PreparedSetup.ps1') -ServerDirectory $Destination
+        if (-not $resumeConfiguration) { throw 'This directory contains a partial installation or operator settings that cannot be overwritten. Choose a new destination; existing files have been preserved.' }
+        Write-Host 'Server files are already prepared. Continuing with server configuration.'
+    } else {
+        Write-Host 'Resuming setup preparation. Downloaded archives will be reused after verification.'
+    }
 }
 if (-not (Get-Command curl.exe -ErrorAction SilentlyContinue) -or -not (Get-Command tar.exe -ErrorAction SilentlyContinue)) { throw 'Windows curl.exe and tar.exe are required.' }
 if (-not $CacheDirectory) { $CacheDirectory = Join-Path $projectRoot 'downloads\packages' }
@@ -33,6 +41,7 @@ New-Item -ItemType Directory -Path $Destination -Force | Out-Null
 $markerText | Set-Content -LiteralPath $incompleteMarker -Encoding ascii
 $work = Join-Path $Destination '_setup'
 New-Item -ItemType Directory -Path $work -Force | Out-Null
+if (-not $resumeConfiguration) {
 foreach ($id in @('unpacker','cs15','amxx','statsme','statsmeSource','sank','mapmanager','bots','sounds')) {
     Write-Host ('Extracting ' + $id)
     Expand-Archive -LiteralPath $components[$id] -DestinationPath (Join-Path $work $id) -Force
@@ -46,10 +55,6 @@ if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath (Join-Path $hldsOutput 
 $eula = Join-Path $hldsOutput 'TEMP\EULAFILE'
 if (-not (Test-Path -LiteralPath $eula)) { throw 'The server license is missing.' }
 Copy-Item -LiteralPath $eula -Destination (Join-Path $Destination 'SERVER-LICENSE.txt')
-if (-not $AcceptServerLicense -and -not (& (Join-Path $PSScriptRoot 'Confirm-CS15ServerLicense.ps1') -LicensePath $eula)) {
-    Write-Host 'Setup cancelled. No server has been installed. Run Setup.cmd again when you are ready.'
-    return
-}
 Copy-Item -Path (Join-Path $hldsOutput 'MAINDIR\*') -Destination $Destination -Recurse
 $csRoot = @(Get-ChildItem -LiteralPath (Join-Path $work 'cs15') -Directory)
 if ($csRoot.Count -ne 1) { throw 'Unexpected CS archive layout.' }
@@ -125,6 +130,7 @@ $maps | Set-Content -LiteralPath (Join-Path $game 'mapcycle.txt') -Encoding asci
 # The archived client configuration is replaced only in this new installation.
 $originalConfig = Join-Path $game 'server.cfg'
 if (Test-Path -LiteralPath $originalConfig) { Move-Item -LiteralPath $originalConfig -Destination (Join-Path $work 'upstream-server.cfg') }
+}
 & (Join-Path $PSScriptRoot 'Configure-CS15Server.ps1') -ServerDirectory $Destination -SettingsPath $SettingsPath
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'components.json') -Destination (Join-Path $Destination 'COMPONENTS.json')
 Copy-Item -LiteralPath $components.server -Destination (Join-Path $work 'hlserver4110.exe')

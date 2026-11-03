@@ -15,8 +15,9 @@ The original local Half-Life client remains unchanged. The isolated baseline use
 | Download integrity | All manifest components verified against their recorded SHA-256 hashes |
 | Invalid cache | A deliberately incorrect cached installer is rejected by SHA-256 verification before execution |
 | Network/cache paths | Missing graph/README files downloaded over HTTPS and verified; the remaining cache reused; an existing installation is refused before modification |
-| License interaction regression | Seven checks pass: exact acceptance, case/spacing, invalid/empty input, cancellation, no, and end of input; empty input never accepts |
-| License cancellation/retry | Legacy pre-license directory resumed; cancellation returns normally; rerunning completes installation using verified cached archives |
+| Setup input regression | Ten checks cover explicit yes/y/no/n choices, empty/invalid answers, name validation, numeric ranges/overflow and ranking spelling |
+| Configuration interruption/retry | Prepared files retained when input ends; configuration resumes without reinstalling; empty/invalid inputs repeat the same question |
+| License file | Original SERVER-LICENSE.txt retained; no interactive license prompt |
 | Retry protection | Completed installations and pre-license directories containing unrelated files are refused without changing those files |
 | Engine startup and legacy UDP status query | Pass: CS 1.5, protocol 46, 32 advertised slots |
 | Plugin loader | Four running modules: AMXX 1.8.1.3746, StatsMe 2.7.0, YaPB 4.4.957 and FakeMeta |
@@ -47,7 +48,7 @@ The stock map time limit and other upstream settings are used only for developme
 
 ## Developer scripts
 
-`Test-CS15InstallerInteraction.ps1` checks the license prompt with simulated input and a fixture license; it does not accept a software license. Full installer cancellation/retry was checked separately using the original archives and private development settings.
+`Test-CS15SetupInput.ps1` checks console input with simulated answers. Passing `-IntegrationCacheDirectory` also runs a fresh installation, interrupts it before settings are written, checks protection of operator edits, and completes the interactive configuration through empty/invalid inputs. It verifies that resuming does not extract the server again. Test settings remain separate from operator choices.
 
 `Get-CS15ServerStatus.ps1` sends a read-only legacy GoldSrc status query. For the isolated test server:
 

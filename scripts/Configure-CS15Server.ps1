@@ -15,17 +15,18 @@ if ($SettingsPath) {
 } else {
     Write-Host 'Choose the server rules. No unanswered project preference is filled in automatically.'
     Write-Host 'Ranking is stored by player name on this LAN server. Reusing a name reuses its ranking.'
+    $readInput = Join-Path $PSScriptRoot 'Read-CS15SetupInput.ps1'
     $settings = [pscustomobject]@{
-        ServerName = Read-Host 'Server name'
-        MapMinutes = Read-Host 'Map time limit in minutes (6-180)'
-        FriendlyFire = Read-Host 'Friendly Fire: 0 = off, 1 = on'
-        BotTarget = Read-Host 'Fill with bots up to this total player count (0-32; 0 = no bots)'
-        BotDifficulty = Read-Host 'Bot difficulty (0 = new, 1 = easy, 2 = medium, 3 = hard, 4 = expert)'
-        SoundCooldown = Read-Host 'Minimum seconds between chat sounds (0-300)'
-        SoundQuota = Read-Host 'Chat sound triggers per player per map (1-1000)'
-        RankBots = Read-Host 'Include bots in the ranking: 0 = no, 1 = yes'
-        RankScore = Read-Host 'Ranking score: KillsMinusDeaths or Kills'
-        AdminName = Read-Host 'Administrator player name (exact spelling)'
+        ServerName = & $readInput -Prompt 'Server name' -Kind Name
+        MapMinutes = & $readInput -Prompt 'Map time limit in minutes' -Kind Integer -Minimum 6 -Maximum 180
+        FriendlyFire = & $readInput -Prompt 'Enable Friendly Fire?' -Kind YesNo
+        BotTarget = & $readInput -Prompt 'Fill with bots up to this total player count (0 disables bots)' -Kind Integer -Maximum 32
+        BotDifficulty = & $readInput -Prompt 'Bot difficulty: 0 new, 1 easy, 2 medium, 3 hard, 4 expert' -Kind Integer -Maximum 4
+        SoundCooldown = & $readInput -Prompt 'Minimum seconds between chat sounds' -Kind Integer -Maximum 300
+        SoundQuota = & $readInput -Prompt 'Chat sound triggers per player per map' -Kind Integer -Minimum 1 -Maximum 1000
+        RankBots = & $readInput -Prompt 'Include bots in the ranking?' -Kind YesNo
+        RankScore = & $readInput -Prompt 'Ranking score' -Kind RankScore
+        AdminName = & $readInput -Prompt 'Administrator player name (exact spelling)' -Kind Name
     }
 }
 

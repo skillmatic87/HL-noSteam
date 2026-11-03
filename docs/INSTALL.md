@@ -8,7 +8,7 @@ The installer has been tested in a new folder independently of the existing Half
 
 Download the repository ZIP from GitHub, extract it, and run `Setup.cmd`. Use a writable folder with sufficient space for the downloaded archives, extracted originals and installed server. Keep the extracted files together.
 
-The default destination is `CS15Server` beside `Setup.cmd`. Setup downloads the exact files in [components.json](../scripts/components.json), checks SHA-256, extracts the original HLDS installer, displays its license, installs the server and mods, and asks for your configuration. The existing Half-Life installation is not a prerequisite.
+The default destination is `CS15Server` beside `Setup.cmd`. Setup downloads the exact files in [components.json](../scripts/components.json), checks SHA-256, extracts the original HLDS installer, preserves its license, installs the server and mods, and asks for your configuration. There is no interactive license prompt. The existing Half-Life installation is not a prerequisite.
 
 All first-time downloads require Internet access. Verified archives remain in `downloads/packages`; retain that folder to reuse them. No third-party binary is stored in this Git repository. The original HLDS installer is retained in the installed `_setup` directory, along with extracted source material and notices. The source archives are retained in the download cache.
 
@@ -18,9 +18,11 @@ To choose a different destination or an existing verified cache:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Install-CS15Server.ps1 -Destination D:\CS15Server -CacheDirectory D:\CS15Downloads
 ```
 
-At the license prompt, type `I ACCEPT` if you agree to the terms, or `CANCEL` to stop. Letter case and extra whitespace are ignored. Empty or unrecognized input asks again and never implies acceptance. Cancellation returns normally without installing the server.
+Yes/no questions accept only `yes`/`y` or `no`/`n`, ignoring letter case and surrounding spaces. Names, numeric ranges and ranking choices have their own validation. Empty or invalid input asks the same question again without starting over.
 
-Run `Setup.cmd` again after stopping at the license prompt. Setup recognizes its pre-license preparation directory and reuses verified downloads. This also works after the older installer's `Server license was not accepted` error. Existing servers, later partial installations and directories containing other files are not overwritten; choose a new destination for those cases. A checksum mismatch stops setup; move the incorrect cached file aside before retrying.
+If setup is interrupted before configuration is saved, run `Setup.cmd` again. It recognizes prepared server files and resumes configuration without reinstalling them. This includes the older installer's failure after an empty configuration answer. Preparation interrupted before file installation also reuses verified downloads. Completed servers, edited operator settings and other partial installations are protected; setup refuses to overwrite them. A checksum mismatch stops setup; move the incorrect cached file aside before retrying.
+
+`SERVER-LICENSE.txt` is copied unchanged from `TEMP/EULAFILE` inside the original Valve `hlserver4110.exe` installer. Removing the prompt does not remove the original file or notices. The `-AcceptServerLicense` parameter remains accepted for older scripts and has no effect.
 
 ## Configuration
 
