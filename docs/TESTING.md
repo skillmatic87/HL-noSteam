@@ -15,6 +15,9 @@ The original local Half-Life client remains unchanged. The isolated baseline use
 | Download integrity | All manifest components verified against their recorded SHA-256 hashes |
 | Invalid cache | A deliberately incorrect cached installer is rejected by SHA-256 verification before execution |
 | Network/cache paths | Missing graph/README files downloaded over HTTPS and verified; the remaining cache reused; an existing installation is refused before modification |
+| License interaction regression | Seven checks pass: exact acceptance, case/spacing, invalid/empty input, cancellation, no, and end of input; empty input never accepts |
+| License cancellation/retry | Legacy pre-license directory resumed; cancellation returns normally; rerunning completes installation using verified cached archives |
+| Retry protection | Completed installations and pre-license directories containing unrelated files are refused without changing those files |
 | Engine startup and legacy UDP status query | Pass: CS 1.5, protocol 46, 32 advertised slots |
 | Plugin loader | Four running modules: AMXX 1.8.1.3746, StatsMe 2.7.0, YaPB 4.4.957 and FakeMeta |
 | AMXX plugin load | 15 running plugins, including stock admin/menu plugins, Map Manager and Sank Sounds |
@@ -43,6 +46,8 @@ The stock map time limit and other upstream settings are used only for developme
 - The StatsMe retro rank header/body configuration is used because the supplied configuration explicitly identifies it for CS 1.5.
 
 ## Developer scripts
+
+`Test-CS15InstallerInteraction.ps1` checks the license prompt with simulated input and a fixture license; it does not accept a software license. Full installer cancellation/retry was checked separately using the original archives and private development settings.
 
 `Get-CS15ServerStatus.ps1` sends a read-only legacy GoldSrc status query. For the isolated test server:
 

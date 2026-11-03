@@ -12,7 +12,7 @@ A downloadable **Counter-Strike 1.5 dedicated server package for Windows LAN gam
 4. Open `CS15Server/ADMIN.local.txt` for your unique administrator credentials.
 5. Run `CS15Server/Start-CS15.cmd` and connect using a compatible CS 1.5 client on the LAN.
 
-Setup requires 64-bit Windows with PowerShell 5.1, `curl.exe` and `tar.exe`; only the current development PC has been tested. It installs into a new `CS15Server` folder and refuses to overwrite an existing installation. Initial setup needs Internet access; later setup attempts can reuse verified cached downloads. It does not install a game client or change firewall settings.
+Setup requires 64-bit Windows with PowerShell 5.1, `curl.exe` and `tar.exe`; only the current development PC has been tested. It installs into a new `CS15Server` folder and refuses to overwrite an existing server. If you stop at the license prompt, rerun `Setup.cmd` to retry. Initial setup needs Internet access; later setup attempts can reuse verified cached downloads. It does not install a game client or change firewall settings.
 
 See [installation and operation](docs/INSTALL.md) for commands, configuration, cached setup and remaining test limitations. This preview downloads third-party files from their recorded sources; it is not a fully offline ZIP containing all game binaries.
 

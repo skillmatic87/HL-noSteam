@@ -18,7 +18,9 @@ To choose a different destination or an existing verified cache:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Install-CS15Server.ps1 -Destination D:\CS15Server -CacheDirectory D:\CS15Downloads
 ```
 
-The destination must not already exist. If setup fails, inspect the error and the `.install-incomplete` marker before choosing a fresh destination. Setup does not delete or overwrite an old installation. A checksum mismatch stops setup; move the incorrect cached file aside before retrying.
+At the license prompt, type `I ACCEPT` if you agree to the terms, or `CANCEL` to stop. Letter case and extra whitespace are ignored. Empty or unrecognized input asks again and never implies acceptance. Cancellation returns normally without installing the server.
+
+Run `Setup.cmd` again after stopping at the license prompt. Setup recognizes its pre-license preparation directory and reuses verified downloads. This also works after the older installer's `Server license was not accepted` error. Existing servers, later partial installations and directories containing other files are not overwritten; choose a new destination for those cases. A checksum mismatch stops setup; move the incorrect cached file aside before retrying.
 
 ## Configuration
 

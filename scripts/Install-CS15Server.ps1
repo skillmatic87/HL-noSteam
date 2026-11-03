@@ -10,30 +10,45 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 if (-not $Destination) { $Destination = Join-Path $projectRoot 'CS15Server' }
 $Destination = [IO.Path]::GetFullPath($Destination)
-if (Test-Path -LiteralPath $Destination) { throw 'The destination already exists. Select a new directory; setup never overwrites an installation.' }
+$incompleteMarker = Join-Path $Destination '.install-incomplete'
+$markerText = 'Setup is incomplete. Do not start this installation.'
+if (Test-Path -LiteralPath $Destination) {
+    $existing = Get-Item -LiteralPath $Destination
+    $expectedFiles = @('_setup','.install-incomplete','SERVER-LICENSE.txt')
+    $unexpectedFiles = @(Get-ChildItem -LiteralPath $Destination -Force | Where-Object { $_.Name -notin $expectedFiles })
+    if (-not $existing.PSIsContainer -or ($existing.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+        -not (Test-Path -LiteralPath $incompleteMarker -PathType Leaf) -or
+        (Get-Content -LiteralPath $incompleteMarker -Raw).Trim() -ne $markerText -or $unexpectedFiles.Count) {
+        throw 'The destination already contains an installation or other files. Setup only resumes a previous stop before license acceptance; choose a new destination for other cases.'
+    }
+    if (@(Get-ChildItem -LiteralPath $Destination -Recurse -Force | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }).Count) {
+        throw 'Setup cannot resume a directory containing links or junctions. Choose a new destination.'
+    }
+    Write-Host 'Resuming setup before license acceptance. Downloaded archives will be reused after verification.'
+}
 if (-not (Get-Command curl.exe -ErrorAction SilentlyContinue) -or -not (Get-Command tar.exe -ErrorAction SilentlyContinue)) { throw 'Windows curl.exe and tar.exe are required.' }
 if (-not $CacheDirectory) { $CacheDirectory = Join-Path $projectRoot 'downloads\packages' }
 $components = & (Join-Path $PSScriptRoot 'Get-CS15Components.ps1') -CacheDirectory $CacheDirectory
-New-Item -ItemType Directory -Path $Destination | Out-Null
-$incompleteMarker = Join-Path $Destination '.install-incomplete'
-'Setup is incomplete. Do not start this installation.' | Set-Content -LiteralPath $incompleteMarker -Encoding ascii
+New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+$markerText | Set-Content -LiteralPath $incompleteMarker -Encoding ascii
 $work = Join-Path $Destination '_setup'
-New-Item -ItemType Directory -Path $work | Out-Null
+New-Item -ItemType Directory -Path $work -Force | Out-Null
 foreach ($id in @('unpacker','cs15','amxx','statsme','statsmeSource','sank','mapmanager','bots','sounds')) {
     Write-Host ('Extracting ' + $id)
-    Expand-Archive -LiteralPath $components[$id] -DestinationPath (Join-Path $work $id)
+    Expand-Archive -LiteralPath $components[$id] -DestinationPath (Join-Path $work $id) -Force
 }
 $wise = Join-Path $work 'unpacker\WiseUnpacker.exe'
-$hldsOutput = Join-Path $work 'server'
+# A fresh extraction directory avoids modifying an earlier extraction on retry.
+$hldsOutput = Join-Path $work ('server-' + [Guid]::NewGuid().ToString('N'))
 $extractLog = Join-Path $work 'server-extraction.txt'
 & $wise -x -o $hldsOutput $components.server *> $extractLog
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath (Join-Path $hldsOutput 'MAINDIR\hlds.exe'))) { throw 'The original server installer could not be extracted. See _setup/server-extraction.txt.' }
 $eula = Join-Path $hldsOutput 'TEMP\EULAFILE'
 if (-not (Test-Path -LiteralPath $eula)) { throw 'The server license is missing.' }
 Copy-Item -LiteralPath $eula -Destination (Join-Path $Destination 'SERVER-LICENSE.txt')
-if (-not $AcceptServerLicense) {
-    Get-Content -LiteralPath $eula | Out-Host
-    if ((Read-Host 'Read SERVER-LICENSE.txt. Type I ACCEPT to install under these terms') -cne 'I ACCEPT') { throw 'Server license was not accepted. No server has been installed.' }
+if (-not $AcceptServerLicense -and -not (& (Join-Path $PSScriptRoot 'Confirm-CS15ServerLicense.ps1') -LicensePath $eula)) {
+    Write-Host 'Setup cancelled. No server has been installed. Run Setup.cmd again when you are ready.'
+    return
 }
 Copy-Item -Path (Join-Path $hldsOutput 'MAINDIR\*') -Destination $Destination -Recurse
 $csRoot = @(Get-ChildItem -LiteralPath (Join-Path $work 'cs15') -Directory)
