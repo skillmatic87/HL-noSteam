@@ -6,7 +6,7 @@ A downloaded component is not a verified working integration. This plan separate
 
 The initial local Half-Life installation reports 1.1.0.8. Build and test the first server package in a separate directory: **CS 1.5, Windows, LAN, 32 slots**.
 
-The original **HLDS 4.1.1.0** installer and archived **CS 1.5** mod with its 29 original maps have been downloaded. The installer matches the size and MD5 recorded by separate archive listings. Its files were extracted for inspection without running the historical installer. Record hashes and exact source revisions before packaging.
+The original **HLDS 4.1.1.0** installer and archived **CS 1.5** mod with its 26 original maps have been downloaded. The installer matches the size and MD5 recorded by separate archive listings. Its files were extracted for inspection without running the historical installer. Record hashes and exact source revisions before packaging.
 
 Review the license supplied with the actual server package. Its distribution provisions concern exact copies with accompanying files and notices; account for this when choosing an original installer, installation overlay or ready-to-run directory. Do not substitute today's Steam engine without compatibility checks.
 
@@ -14,12 +14,12 @@ Review the license supplied with the actual server package. Its distribution pro
 
 | Feature | Existing component being evaluated | Current evidence |
 | --- | --- | --- |
-| GoldSrc plugin loader | Metamod-P | Windows release downloaded; runtime compatibility untested |
-| Statistics and local ranking | StatsMe 2.8.3 | Binary, source and license downloaded; config explicitly documents CS 1.5 and LAN |
-| Admin menu | AMX Mod X 1.8.1 or ClanMod 1.82b1 | Existing packages downloaded; final selection depends on combined vote/sound setup |
-| Votes and nominations | DeagsMapManager 3.23 | Source and compiled plugin downloaded; exact five-minute timing needs verification |
-| Chat sounds | Sank Sounds | Author's source downloaded; original sound archive still being retrieved |
-| Bots | YaPB 4.4.957 | Windows package downloaded; engine and map compatibility untested |
+| GoldSrc plugin loader | Metamod-P 1.21p109 | Loads the selected Windows plugins |
+| Statistics and local ranking | StatsMe 2.8.3 | Records kills; saved ranking survives map changes and a process restart |
+| Admin menu | AMX Mod X 1.8.1 | Stock admin/menu plugins load; client permission checks pending |
+| Votes and nominations | Mistrick Map Manager 2.5.61 | Compiles with a small CS 1.5 round-event adaptation; five-minute setting active |
+| Chat sounds | Sank Sounds 1.9.1 | Compiles and loads 14 classic StatsMe sound-pack entries; client playback pending |
+| Bots | YaPB 4.4.957 | Two test bots join and play on de_dust and de_dust2 |
 
 Use one active map-vote system. Avoid duplicate menus or overlapping statistics commands. Prefer configuring existing components. Document any narrow compatibility or timing adjustment rather than replacing an existing mod.
 
@@ -41,6 +41,8 @@ Unanswered preferences remain in [open questions](OPEN-QUESTIONS.md). Test-only 
 Prepare a versioned Windows download with English instructions, launch/configuration files, required existing mods, notices and source material required by component licenses. Preserve original installers where their terms require that form. Exclude credentials and generated rankings.
 
 Test the package after fresh extraction. Configuration fragments alone are not the final deliverable.
+
+StatsMe stores the game directory in a 32-byte buffer and expects a bare mod name for game detection. The old engine supplies an absolute path. The shorter test path allowed ranking persistence, but is itself 32 bytes and exceeds safe storage including the terminator. Resolve the path handling and CS-specific detection before release; a saved ranking alone does not verify the complete statistics integration. See [test results](TESTING.md).
 
 ## 5. Verify the result
 

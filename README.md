@@ -2,7 +2,7 @@
 
 A downloadable **Counter-Strike 1.5 dedicated server package for Windows LAN games with 32 player slots**.
 
-**Status: in development. No ready-to-use server package has been released yet.** Original components have been downloaded for evaluation; the assembled server has not passed its runtime checks.
+**Status: in development. No ready-to-use server package has been released yet.** An isolated test server starts with 32 slots, StatsMe, bots, the admin plugins, Map Manager and Sank Sounds. Client acceptance tests and release packaging remain open.
 
 ## First release
 
@@ -24,6 +24,7 @@ Existing server mods will be assembled and configured. The complete server distr
 - [Implementation plan](docs/PLAN.md)
 - [Open questions](docs/OPEN-QUESTIONS.md)
 - [Sources and compatibility notes](docs/SOURCES.md)
+- [Integration test results and limitations](docs/TESTING.md)
 - [Read-only Half-Life inventory script](scripts/Get-HalfLifeInventory.ps1)
 
 All project documentation, filenames, comments and messages are maintained in English.

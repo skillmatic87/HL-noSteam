@@ -9,7 +9,7 @@ Research date: 2026-11-03. Downloaded, inspected, installed and runtime-tested a
 | Local `hl.exe` and bundled `readme.txt` | Initial Half-Life version: 1.1.0.8 | No runtime build established |
 | [Valve anniversary update](https://www.half-life.com/en/halflife/25th) | Steam branch and `steam_legacy` | Separate from retail patches |
 | [Valve announcements](https://steamcommunity.com/app/70/announcements/) | Official update notes | No live Steam depot build queried |
-| [CS archive](https://github.com/Ch0wW/counterstrike-betas) and [CS 1.5 README](https://github.com/Ch0wW/counterstrike-betas/blob/cs15_retail/README.md) | CS 1.5 files and recommended engine versions | Preservation archive; local integration untested |
+| [CS archive](https://github.com/Ch0wW/counterstrike-betas) and [CS 1.5 README](https://github.com/Ch0wW/counterstrike-betas/blob/cs15_retail/README.md) | CS 1.5 files, 26 maps and recommended engine versions | Preservation archive; dedicated server starts locally |
 | [Windows HLDS archive](https://archive.org/details/goldsrc_hlds_won_windows) and [second listing](https://archive.org/details/hlds_20250228) | Original `hlserver4110.exe` | Size and MD5 match; included license inspected |
 | [HLDS at ModDB](https://www.moddb.com/downloads/half-life-dedicated-server-4110) | Additional size and MD5 listing | Community upload |
 | [WON2 server project](https://github.com/Ch0wW/docker-hlds-won2) | Protocol and plugin research | Linux; not the Windows deployment |
@@ -23,10 +23,12 @@ Research date: 2026-11-03. Downloaded, inspected, installed and runtime-tested a
 | ClanMod 1.82b1 | [Original files](https://sourceforge.net/projects/clanmod/files/ClanMod/ClanMod%201.82b1/) | Downloaded admin-menu candidate |
 | AMX Mod X 1.8.1 | [Original base package](https://sourceforge.net/projects/amxmodx/files/AMX%20Mod%20X%20Base/1.8.1/) | Downloaded; SHA-256 matches project page |
 | AMXX compatibility | [Official 1.8.2 notes](https://wiki.alliedmods.net/Amx_mod_x_1.8.2_release_notes) | Historical engine/module compatibility needs testing |
-| Metamod-P | [Official releases](https://github.com/Bots-United/metamod-p/releases) | Windows v1.21p109 downloaded |
-| DeagsMapManager 3.23 | [Preserved files](https://github.com/ty-porter/deagsmapmanager) | Source and compiled plugin downloaded |
-| Sank Sounds | [Author's source](https://github.com/ZTHawk/HL1_SankSounds) and [original discussion](https://forums.alliedmods.net/archive/index.php/t-5055.html) | Source downloaded; sound archive retrieval incomplete |
-| YaPB | [Releases](https://github.com/yapb/yapb/releases) and [supported engines](https://yapb.github.io/docs/en/getting-started/introduction/) | Windows 4.4.957 downloaded; documentation lists WON support; actual integration untested |
+| Metamod-P | [Official releases](https://github.com/Bots-United/metamod-p/releases) | Windows v1.21p109 loads the selected stack |
+| Map Manager 2.5.61 | [Author's repository](https://github.com/Mistrick/MapManager) | Selected vote/nominations plugin; CS 1.5 round-event adaptation documented in TESTING.md |
+| DeagsMapManager 3.23 | [Preserved files](https://github.com/ty-porter/deagsmapmanager) | Evaluated alternative; not active in the test server |
+| Sank Sounds | [Author's source](https://github.com/ZTHawk/HL1_SankSounds) and [original discussion](https://forums.alliedmods.net/archive/index.php/t-5055.html) | Version 1.9.1 source compiles with AMXX 1.8.1 and loads 14 sound entries |
+| Classic sound pack | [StatsMe Soundpack 1.0](https://sourceforge.net/projects/statsme/files/StatsMe%20Add-Ons/Soundpack%201.0/) | 14 WAV files downloaded; PCM, mono, 11025/22050 Hz, 8/16 bit |
+| YaPB | [Releases](https://github.com/yapb/yapb/releases) and [supported engines](https://yapb.github.io/docs/en/getting-started/introduction/) | Windows 4.4.957 runs two test bots on de_dust and de_dust2 |
 
 ## Inspection tooling
 
@@ -43,5 +45,6 @@ Research date: 2026-11-03. Downloaded, inspected, installed and runtime-tested a
 | `amxmodx-1.8.1-base.zip` | `8d5d07361f3479e38f2392d209fad7032f755b57aa70c38c0310f98313a610c3` |
 | `yapb-4.4.957-windows.zip` | `c32a5b4d77c08c3c59c417568c5719f9227238c6d627d478cfb1d9f7d9c113f4` |
 | `metamod-p-v1.21p109-win32.tar.xz` | `564838d9a42032ee3bc44eeb2616896e0789c3ce8d7a033d81f3f795b67e31ed` |
+| `soundpack.zip` | `9d4d82f6410096ee8bb9ced4404fccbec583c5b15daf4987b14838871ab3774a` |
 
 Local hashes identify inspected files. Independent matching references are recorded only where checked; a computed hash alone does not prove authenticity. HTML returned by failed downloads is excluded from candidate packages.
