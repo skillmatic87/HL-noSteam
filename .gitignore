@@ -1,0 +1,29 @@
+# Only explicitly maintained project files belong in the public repository.
+/*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/docs/
+!/scripts/
+
+# Keep local credentials, binaries, downloads and runtime data out of Git.
+**/.env
+**/.env.*
+**/*secret*
+**/*password*
+**/*.local.*
+**/users.ini
+**/server.cfg
+**/logs/
+**/downloads/
+**/backups/
+**/runtime/
+**/*.exe
+**/*.dll
+**/*.so
+**/*.zip
+**/*.7z
+**/*.rar
+**/*.pak
+**/*.dem
+**/*.sav
