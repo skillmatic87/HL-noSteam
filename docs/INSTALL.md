@@ -1,6 +1,6 @@
 # Installation and operation
 
-## Preview status
+## Release status
 
 The installer has been tested in a new folder independently of the existing Half-Life game installation. Server startup and plugin loading passed automated integration checks. The operator additionally reports client connections, administrator access, permission enforcement, map changes/votes, sounds, fresh-client custom maps and bot play working. Remaining acceptance checks include ranking persistence, simultaneous playback with two human clients and 32-client capacity. See [test results](TESTING.md).
 

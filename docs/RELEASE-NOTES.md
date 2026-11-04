@@ -1,6 +1,6 @@
-# v0.1.0-rc.1 — local control panel and main-folder launchers
+# v1.0.0 — local control panel and main-folder launchers
 
-This release candidate packages the Windows installer and the experimental Linux Mint installer as separate source ZIP downloads. First setup downloads and verifies the original server/mod components; it does not include a game client or a preconfigured server with shared credentials.
+Version 1.0.0 packages the Windows installer and the experimental Linux Mint installer as separate source ZIP downloads. First setup downloads and verifies the original server/mod components; it does not include a game client or a preconfigured server with shared credentials.
 
 ## Start from the main folder
 

@@ -86,10 +86,57 @@ def prepare(request):
     return windows, assets + [checksum_file, notes_file], notes_file
 
 
+def verify_uploaded_asset(tag, asset):
+    with tempfile.TemporaryDirectory() as directory:
+        gh('release', 'download', tag, '--pattern', asset.name, '--dir', directory)
+        downloaded = Path(directory) / asset.name
+        if hashlib.sha256(downloaded.read_bytes()).digest() != hashlib.sha256(asset.read_bytes()).digest():
+            raise ValueError('An existing release asset differs: ' + asset.name)
+
+
+def promote(request, target, assets, notes, releases):
+    """Correct an explicitly identified prerelease, preserving its release ID."""
+    previous = request['replaces']
+    if not re.fullmatch(r'v\d+\.\d+\.\d+-rc\.\d+', previous['tag']) or type(previous['id']) is not int:
+        raise ValueError('The previous prerelease must be explicitly identified.')
+    release = next((entry for entry in releases if entry['id'] == previous['id']), None)
+    if release is None or release['tag_name'] not in (previous['tag'], request['tag']):
+        raise ValueError('The release selected for correction changed.')
+    if any(entry['tag_name'] == request['tag'] and entry['id'] != previous['id'] for entry in releases):
+        raise ValueError('The requested final version belongs to another release.')
+    if request['prerelease'] or release.get('immutable'):
+        raise ValueError('This correction requires a mutable release and a final version.')
+    if release['tag_name'] == previous['tag'] and not release['prerelease']:
+        raise ValueError('Only the identified prerelease can be promoted.')
+    old_zips = {f'HL-noSteam-{platform}-{previous["tag"]}.zip' for platform in ('Windows', 'Linux')}
+    existing = {entry['name'] for entry in release['assets']}
+    if existing - (old_zips | {asset.name for asset in assets}):
+        raise ValueError('Unexpected assets found; correction cancelled.')
+    current_tag = release['tag_name']
+    for asset in assets:
+        if asset.suffix == '.zip':
+            if asset.name not in existing:
+                gh('release', 'upload', current_tag, str(asset))
+            verify_uploaded_asset(current_tag, asset)
+    gh('release', 'edit', current_tag, '--tag', request['tag'], '--target', target,
+       '--title', request['title'], '--notes-file', str(notes), '--prerelease=false', '--latest')
+    metadata = [str(asset) for asset in assets if asset.suffix != '.zip']
+    gh('release', 'upload', request['tag'], *metadata, '--clobber')
+    for asset in assets:
+        verify_uploaded_asset(request['tag'], asset)
+    # Remove only our superseded ZIPs, after every replacement is verified.
+    for name in sorted(old_zips & existing):
+        gh('release', 'delete-asset', request['tag'], name, '--yes')
+    print('Published: https://github.com/' + REPOSITORY + '/releases/tag/' + request['tag'])
+
+
 def publish(request, target, assets, notes):
     if not os.environ.get('GH_TOKEN') or not shutil.which('gh'):
         raise RuntimeError('GitHub CLI and the workflow GH_TOKEN are required to publish.')
     releases = json.loads(run('gh', 'api', f'repos/{REPOSITORY}/releases?per_page=100'))
+    if request.get('replaces'):
+        promote(request, target, assets, notes, releases)
+        return
     release = next((entry for entry in releases if entry['tag_name'] == request['tag']), None)
     if release is not None:
         if release['target_commitish'] != target or release['prerelease'] != request['prerelease']:

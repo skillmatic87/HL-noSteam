@@ -14,3 +14,6 @@
 # Preserve the exact installed templates, including upstream spacing/line endings.
 /content/files/cstrike/motd.txt whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 /content/files/cstrike/addons/yapb/conf/lang/en_chat.cfg whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+# Publishing requests belong to the repository, not the downloadable server package.
+/.github export-ignore
