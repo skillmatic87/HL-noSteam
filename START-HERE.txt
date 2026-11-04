@@ -31,5 +31,5 @@ and private credentials are not included in the source download.
 Private credentials are generated during setup: see the installed
 server's ADMIN.local.txt. Never publish that file or your configured server.
 
-Full instructions and remaining release-candidate checks: README.md, docs/.
+Full instructions and verification status: README.md, docs/.
 https://github.com/skillmatic87/HL-noSteam
