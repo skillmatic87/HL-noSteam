@@ -34,7 +34,7 @@ $template=@'
   @media(max-width:540px) { th,td { padding:10px 6px; } audio { width:175px; } td:nth-child(2),th:nth-child(2) { display:none; } }
 </style>
 <header><h1>LAN Sound Preview</h1>
-<p>28 short clips selected from the supplied server collection. Play a clip below; its keyword is what players type into chat.</p></header>
+<p>__SOUND_COUNT__ clips selected from the supplied server collection. Play a clip below; its keyword is what players type into chat.</p></header>
 <label for="filter">Find a keyword</label>
 <input type="search" id="filter" placeholder="moin, afk, bier..." autocomplete="off">
 <table><thead><tr><th scope="col">Chat keyword</th><th scope="col">Duration</th><th scope="col">Listen</th></tr></thead><tbody>
@@ -53,4 +53,4 @@ document.addEventListener('play',event=>{
 </script>
 </html>
 '@
-[IO.File]::WriteAllText((Join-Path $ContentDirectory 'Listen.html'),$template.Replace('__ROWS__',($rows -join "`n")),(New-Object Text.UTF8Encoding($false)))
+[IO.File]::WriteAllText((Join-Path $ContentDirectory 'Listen.html'),$template.Replace('__ROWS__',($rows -join "`n")).Replace('__SOUND_COUNT__',[string]@($manifest.sounds).Count),(New-Object Text.UTF8Encoding($false)))

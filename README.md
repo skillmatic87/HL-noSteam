@@ -16,7 +16,7 @@ Setup requires 64-bit Windows with PowerShell 5.1, `curl.exe` and `tar.exe`; onl
 
 See [installation and operation](docs/INSTALL.md) for commands, configuration, cached setup and remaining test limitations. This preview downloads third-party files from their recorded sources; it is not a fully offline ZIP containing all game binaries.
 
-The additional LAN pack installs **13 custom maps, including `de_rats_2001`, `awp_map`, `fy_iceworld` and `fy_pool_day`, plus 28 selected chat sounds**. See [content, commands and existing-server updates](docs/CONTENT.md). Open [the offline listening page](content/Listen.html) to preview the new sounds. Existing default installations can use `Update-Content.cmd` after stopping the server.
+The additional LAN pack installs **13 custom maps, including `de_rats_2001`, `awp_map`, `fy_iceworld` and `fy_pool_day`, plus 108 chat sounds**. The sound pack includes 80 further clips selected by the operator. Together with the 14 original sounds, installations have 122 chat commands. See [content, commands and existing-server updates](docs/CONTENT.md). Open [the offline listening page](content/Listen.html) to preview the additional sounds. Existing default installations can use `Update-Content.cmd` after stopping the server.
 
 ## First release
 

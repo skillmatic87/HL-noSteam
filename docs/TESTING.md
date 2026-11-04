@@ -67,6 +67,20 @@ Visual Full HD/QHD gameplay, FOV, audible sound playback to multiple clients, se
 
 ### Additional content pack
 
+Sound expansion on 2026-11-04:
+
+| Check | Observed result |
+| --- | --- |
+| Operator selection | All 80 marked source files matched the reviewed desktop list and saved source checksums |
+| Conversion | All 80 outputs are nonempty PCM signed 16-bit mono WAV at 22050 Hz; duration differs from the source inventory by less than 0.3 seconds; no clip was intentionally trimmed |
+| Keyword collisions | New `camper_agc`, `benny_cp` and `haha_cp` mappings preserve existing commands |
+| Content regression | Preview, conflict/corruption rejection, protected configuration/ranking/text, repeat update and exact rollback pass with 108 additional sounds |
+| Installed server | Updated with a content backup, restarted on the same map, 15 plugins running, all 122 keywords and all 122 nonzero sound durations reported by Sank Sounds |
+| Operator data | Eight existing protected launcher/configuration/ranking files retained identical bytes across the stopped-server update; sound quota 100 and delay 3 seconds retained |
+| Local client | All 80 new WAVs preloaded and checksum-verified in the installed game client |
+
+The additional pack now contains 108 sounds, with 122 total keywords including the original 14. Audible playback on multiple CS clients remains a separate acceptance check. The initial 28-clip evidence below is historical.
+
 The `lan-nostalgia-2026-11` pack was implemented and tested on 2026-11-03:
 
 | Check | Observed result |

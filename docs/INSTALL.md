@@ -12,7 +12,7 @@ The default destination is `CS15Server` beside `Setup.cmd`. Setup downloads the 
 
 All first-time downloads require Internet access. Verified base archives remain in `downloads/packages`, and additional map/navigation downloads remain in `downloads/content`; retain them to reuse them. Selected additional WAV clips and a generated navigation graph are included in Git; game/server executables are downloaded separately. The original HLDS installer is retained in the installed `_setup` directory, along with extracted source material and notices. Source archives remain in the download cache.
 
-After base configuration, setup adds 13 custom maps and 28 chat sounds. See [content installation, map capacities, sound commands and rollback](CONTENT.md). An existing installation uses the separate updater after stopping the server; `Setup.cmd` still refuses to overwrite a completed installation.
+After base configuration, setup adds 13 custom maps and 108 chat sounds, including 80 further operator-selected clips. See [content installation, map capacities, sound commands and rollback](CONTENT.md). An existing installation uses the separate updater after stopping the server; `Setup.cmd` still refuses to overwrite a completed installation.
 
 To choose a different destination or an existing verified cache:
 

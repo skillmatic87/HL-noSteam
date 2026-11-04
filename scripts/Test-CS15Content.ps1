@@ -73,7 +73,7 @@ Write-Host 'PASS: corrupt content is rejected before server mutation.'
 $result=& (Join-Path $PSScriptRoot 'Update-CS15Content.ps1') -ServerDirectory $fixture -CacheDirectory $CacheDirectory
 Assert-True ($result.ChangedFiles -gt 0) 'No content was installed.'
 Assert-True (@(Get-ChildItem (Join-Path $fixture 'cstrike\maps') -Filter '*.bsp').Count -eq 13) 'Expected thirteen additional maps.'
-Assert-True (@(Get-ChildItem (Join-Path $fixture 'cstrike\sound\lan') -Filter '*.wav').Count -eq 28) 'Expected twenty-eight additional sounds.'
+Assert-True (@(Get-ChildItem (Join-Path $fixture 'cstrike\sound\lan') -Filter '*.wav').Count -eq @($manifest.sounds).Count) 'Expected every sound listed in the content manifest.'
 $after=Get-FixtureSnapshot
 foreach ($path in @('hlds.exe','cstrike\liblist.gam','cstrike\server.cfg','cstrike\addons\amxmodx\configs\users.ini','cstrike\statsme.log','cstrike\addons\statsme\statsme.log','cstrike\gfx\env\snowup.tga')) {
     Assert-True ($initial[$path] -eq $after[$path]) ('An unrelated file was modified: '+$path)
@@ -84,7 +84,7 @@ $soundText=[IO.File]::ReadAllText((Join-Path $fixture 'cstrike\addons\amxmodx\co
 Assert-True ($soundText.StartsWith("SND_MAX; 100`r`nSND_DELAY; 3`r`n")) 'Local sound quota or delay changed.'
 $mapsText=[IO.File]::ReadAllText((Join-Path $fixture 'cstrike\addons\amxmodx\configs\maps.ini'))
 Assert-True ($mapsText -match '(?m)^de_rats_2001 0 20\r?$') 'Rats 2001 capacity is missing.'
-Write-Host 'PASS: thirteen maps and twenty-eight sounds installed; credentials, ranking, original text and shared resources preserved.'
+Write-Host ('PASS: thirteen maps and '+@($manifest.sounds).Count+' sounds installed; credentials, ranking, original text and shared resources preserved.')
 $null=& (Join-Path $PSScriptRoot 'Update-CS15Content.ps1') -ServerDirectory $fixture -CacheDirectory $CacheDirectory
 Assert-Snapshot $after (Get-FixtureSnapshot)
 Write-Host 'PASS: a second update makes no changes and adds no duplicate entries.'
