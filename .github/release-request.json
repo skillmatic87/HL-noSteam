@@ -1,18 +1,22 @@
 {
-  "tag": "v0.1.0-rc.1",
-  "title": "CS 1.5 LAN Server v0.1.0-rc.1",
-  "prerelease": true,
+  "tag": "v1.0.0",
+  "title": "CS 1.5 LAN Server v1.0.0",
+  "prerelease": false,
   "archiveAutoCRLF": true,
+  "replaces": {
+    "tag": "v0.1.0-rc.1",
+    "id": 434289085
+  },
   "sources": [
     {
       "platform": "Windows",
-      "commit": "d47a6d1a9599367b636dfb17e097b12360ec2632",
-      "contentSHA256": "c7ff13812a6471509636a170e9a7a0afe655ec49f6dc8f7fb30b67e06697e969"
+      "commit": "d3d3c46f5049e0944e85dc3b320c4af4664220fa",
+      "contentSHA256": "1629e62208bce558104d1df3bb2732a415851e15ef26a599c6da2af01f2cb0d6"
     },
     {
       "platform": "Linux",
-      "commit": "f821efe68ec76a65a39dab2c826d1ec9715f4e3f",
-      "contentSHA256": "869637af535d6bc99763b3f8151b66a166c60fe8499d78c7024f696a34b27840"
+      "commit": "088f95ce471ad04a0cd10beca1ff19bfa9e3bb27",
+      "contentSHA256": "bf5d18040a263f2078a7592c2ff6a28abdb369d544f467425b68f9af2735389a"
     }
   ]
 }
