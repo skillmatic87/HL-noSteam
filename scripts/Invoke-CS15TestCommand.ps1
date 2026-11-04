@@ -1,24 +1,29 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$Command,
-    [string]$ServerDirectory
+    [string]$ServerDirectory,
+    [System.Net.IPAddress]$ServerAddress = '127.0.0.1',
+    [ValidateRange(1,65535)][int]$Port = 27025
 )
 
 $ErrorActionPreference = 'Stop'
 $serverRoot = if ($ServerDirectory) { (Resolve-Path -LiteralPath $ServerDirectory).Path } else { Join-Path (Split-Path -Parent $PSScriptRoot) 's' }
 if ($ServerDirectory) {
     $localConfig = Get-Content -LiteralPath (Join-Path $serverRoot 'cstrike\server.cfg') -Raw
-    if ($localConfig -notmatch '(?m)^rcon_password\s+"([a-f0-9]{32})"') { throw 'No generated local control credential was found.' }
-    $password = $Matches[1]
+    $credentials=[regex]::Matches($localConfig,'(?m)^[ \t]*rcon_password[ \t]+"([^"\r\n]+)"[ \t]*(?://[^\r\n]*)?\r?$')
+    if ($credentials.Count -ne 1) { throw 'Expected one quoted local RCON password in server.cfg.' }
+    $password = $credentials[0].Groups[1].Value
     $localConfig = $null
 } else {
     $password = (Get-Content -LiteralPath (Join-Path $serverRoot 'test-rcon.secret') -Raw).Trim()
 }
-if ($password -notmatch '^(?:[a-f0-9]{20}|[a-f0-9]{32})$') { throw 'Invalid local test credential.' }
+if ([string]::IsNullOrWhiteSpace($password) -or $password -match '[^\x20-\x7e]|"') { throw 'Invalid local control credential: use nonempty ASCII text without quotes or control characters.' }
 
 $socket = New-Object System.Net.Sockets.UdpClient
 $socket.Client.ReceiveTimeout = 1500
-$socket.Connect('127.0.0.1',27025)
+$localAddresses=@('127.0.0.1')+@(Get-NetIPAddress -AddressFamily IPv4 | Select-Object -ExpandProperty IPAddress)
+if($ServerAddress.ToString() -notin $localAddresses) { throw 'This operator helper only sends control commands to this PC.' }
+$socket.Connect($ServerAddress.ToString(),$Port)
 try {
     [byte[]]$request = @(255,255,255,255) + [System.Text.Encoding]::ASCII.GetBytes('challenge rcon') + @(0)
     [void]$socket.Send($request,$request.Length)
@@ -26,7 +31,7 @@ try {
     $challengeReply = [System.Text.Encoding]::ASCII.GetString($socket.Receive([ref]$endpoint))
     if ($challengeReply -notmatch 'challenge rcon ([0-9]+)') { throw 'The test server did not issue an RCON challenge.' }
     $challenge = $Matches[1]
-    $commandText = 'rcon ' + $challenge + ' ' + $password + ' ' + $Command
+    $commandText = 'rcon ' + $challenge + ' "' + $password + '" ' + $Command
     [byte[]]$request = @(255,255,255,255) + [System.Text.Encoding]::ASCII.GetBytes($commandText) + @(0)
     [void]$socket.Send($request,$request.Length)
     for ($packet = 0; $packet -lt 20; $packet++) {

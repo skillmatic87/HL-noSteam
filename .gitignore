@@ -4,8 +4,10 @@
 !/.gitattributes
 !/README.md
 !/Setup.cmd
+!/Update-Content.cmd
 !/docs/
 !/scripts/
+!/content/
 
 # Keep local credentials, binaries, downloads and runtime data out of Git.
 **/.env
@@ -14,6 +16,7 @@
 **/*password*
 **/*.local.*
 **/users.ini
+**/csadmin.cfg
 **/server.cfg
 **/logs/
 **/downloads/

@@ -16,6 +16,8 @@ Setup requires 64-bit Windows with PowerShell 5.1, `curl.exe` and `tar.exe`; onl
 
 See [installation and operation](docs/INSTALL.md) for commands, configuration, cached setup and remaining test limitations. This preview downloads third-party files from their recorded sources; it is not a fully offline ZIP containing all game binaries.
 
+The additional LAN pack installs **13 custom maps, including `de_rats_2001`, `awp_map`, `fy_iceworld` and `fy_pool_day`, plus 28 selected chat sounds**. See [content, commands and existing-server updates](docs/CONTENT.md). Open [the offline listening page](content/Listen.html) to preview the new sounds. Existing default installations can use `Update-Content.cmd` after stopping the server.
+
 ## First release
 
 The package should be easy to install by downloading, extracting and copying files. It must include:
@@ -34,6 +36,7 @@ The installer assembles existing server mods and compiles the two Pawn plugins u
 
 - [Delivery requirements and acceptance checks](docs/DELIVERY.md)
 - [Installation and operation](docs/INSTALL.md)
+- [Local client widescreen profiles and LAN connection](docs/CLIENT.md)
 - [Implementation plan](docs/PLAN.md)
 - [Open questions](docs/OPEN-QUESTIONS.md)
 - [Sources and compatibility notes](docs/SOURCES.md)

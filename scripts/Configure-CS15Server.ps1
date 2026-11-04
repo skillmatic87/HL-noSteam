@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$ServerDirectory,
-    [string]$SettingsPath
+    [string]$SettingsPath,
+    [string]$BindAddress
 )
 
 $ErrorActionPreference = 'Stop'
@@ -9,6 +10,7 @@ $ServerDirectory = (Resolve-Path -LiteralPath $ServerDirectory).Path
 $game = Join-Path $ServerDirectory 'cstrike'
 if (-not (Test-Path -LiteralPath (Join-Path $game 'addons\statsme\dlls\sm_cstrike_mm.dll'))) { throw 'The CS 1.5 installation is incomplete.' }
 if (Test-Path -LiteralPath (Join-Path $game 'server.cfg')) { throw 'Configuration already exists. Back it up and move it aside before reconfiguring.' }
+$BindAddress = & (Join-Path $PSScriptRoot 'Get-CS15LANAddress.ps1') -BindAddress $BindAddress
 
 if ($SettingsPath) {
     $settings = Get-Content -LiteralPath $SettingsPath -Raw | ConvertFrom-Json
@@ -88,10 +90,12 @@ $soundConfig = @(
 $soundNames = @('dominating','doublekill','firstblood','godlike','headshot','humiliation','killingspree','monsterkill','multikill','perfect','prepare','rampage','ultrakill','unstoppable')
 $soundConfig += $soundNames | ForEach-Object { $_ + '; sound/misc/' + $_ + '.wav' }
 $soundConfig | Set-Content -LiteralPath (Join-Path $game 'addons\amxmodx\configs\SND-LIST.CFG') -Encoding ascii
-@'
+$launcher = @'
 @echo off
 cd /d "%~dp0"
-hlds.exe -console -game cstrike -nomaster -insecure -noipx -port 27015 +sv_lan 1 +maxplayers 32 +map de_dust2
-'@ | Set-Content -LiteralPath (Join-Path $ServerDirectory 'Start-CS15.cmd') -Encoding ascii
+hlds.exe -console -game cstrike -nomaster -insecure -noipx -port 27015 +ip __LAN_ADDRESS__ +sv_lan 1 +maxplayers 32 +map de_dust2
+'@
+$launcher.Replace('__LAN_ADDRESS__',$BindAddress) | Set-Content -LiteralPath (Join-Path $ServerDirectory 'Start-CS15.cmd') -Encoding ascii
+Write-Host ('LAN address: '+$BindAddress+':27015. Update +ip in Start-CS15.cmd if this PC changes address.')
 Write-Host 'Configuration complete. Your unique administrator credentials are in ADMIN.local.txt.'
 Write-Host 'Start the server with Start-CS15.cmd. No firewall rule has been created.'

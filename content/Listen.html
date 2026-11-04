@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LAN Sound Preview</title>
+<style>
+  :root { color-scheme:light; font:16px/1.55 system-ui,sans-serif; color:#172e39; background:#f3f5f3; }
+  body { max-width:880px; margin:42px auto; padding:0 20px 40px; }
+  header { border-top:5px solid #207363; padding-top:20px; }
+  h1 { font-size:clamp(2rem,5vw,3rem); letter-spacing:-.045em; margin:0 0 8px; }
+  p { max-width:66ch; margin:8px 0 20px; }
+  label { display:block; font-weight:650; margin-bottom:6px; }
+  input { width:min(100%,420px); box-sizing:border-box; font:inherit; padding:10px 12px; border:1px solid #71877e; border-radius:6px; }
+  input:focus-visible { outline:3px solid #207363; outline-offset:3px; }
+  table { width:100%; border-collapse:collapse; background:white; margin-top:24px; }
+  th,td { text-align:left; padding:12px 14px; border-bottom:1px solid #dce3df; }
+  thead { background:#173f36; color:white; }
+  code { font-size:1rem; }
+  audio { width:min(100%,300px); vertical-align:middle; }
+  .note { color:#425c53; font-size:.92rem; margin-top:24px; }
+  [hidden] { display:none; }
+  @media(max-width:540px) { th,td { padding:10px 6px; } audio { width:175px; } td:nth-child(2),th:nth-child(2) { display:none; } }
+</style>
+<header><h1>LAN Sound Preview</h1>
+<p>28 short clips selected from the supplied server collection. Play a clip below; its keyword is what players type into chat.</p></header>
+<label for="filter">Find a keyword</label>
+<input type="search" id="filter" placeholder="moin, afk, bier..." autocomplete="off">
+<table><thead><tr><th scope="col">Chat keyword</th><th scope="col">Duration</th><th scope="col">Listen</th></tr></thead><tbody>
+<tr data-keyword="moin"><th scope="row"><code>moin</code></th><td>4.65 s</td><td><audio controls preload="none" aria-label="Listen to moin" src="files/cstrike/sound/lan/moin.wav"></audio></td></tr>
+<tr data-keyword="nabend"><th scope="row"><code>nabend</code></th><td>1.52 s</td><td><audio controls preload="none" aria-label="Listen to nabend" src="files/cstrike/sound/lan/nabend.wav"></audio></td></tr>
+<tr data-keyword="n8"><th scope="row"><code>n8</code></th><td>1.15 s</td><td><audio controls preload="none" aria-label="Listen to n8" src="files/cstrike/sound/lan/n8.wav"></audio></td></tr>
+<tr data-keyword="bye"><th scope="row"><code>bye</code></th><td>3.55 s</td><td><audio controls preload="none" aria-label="Listen to bye" src="files/cstrike/sound/lan/bye.wav"></audio></td></tr>
+<tr data-keyword="jaja"><th scope="row"><code>jaja</code></th><td>1.55 s</td><td><audio controls preload="none" aria-label="Listen to jaja" src="files/cstrike/sound/lan/jaja.wav"></audio></td></tr>
+<tr data-keyword="sorry"><th scope="row"><code>sorry</code></th><td>0.65 s</td><td><audio controls preload="none" aria-label="Listen to sorry" src="files/cstrike/sound/lan/sorry.wav"></audio></td></tr>
+<tr data-keyword="danke"><th scope="row"><code>danke</code></th><td>0.60 s</td><td><audio controls preload="none" aria-label="Listen to danke" src="files/cstrike/sound/lan/danke.wav"></audio></td></tr>
+<tr data-keyword="camper"><th scope="row"><code>camper</code></th><td>3.35 s</td><td><audio controls preload="none" aria-label="Listen to camper" src="files/cstrike/sound/lan/camper.wav"></audio></td></tr>
+<tr data-keyword="lol"><th scope="row"><code>lol</code></th><td>1.56 s</td><td><audio controls preload="none" aria-label="Listen to lol" src="files/cstrike/sound/lan/lol.wav"></audio></td></tr>
+<tr data-keyword="mimi"><th scope="row"><code>mimi</code></th><td>1.66 s</td><td><audio controls preload="none" aria-label="Listen to mimi" src="files/cstrike/sound/lan/mimi.wav"></audio></td></tr>
+<tr data-keyword="zielen"><th scope="row"><code>zielen</code></th><td>2.69 s</td><td><audio controls preload="none" aria-label="Listen to zielen" src="files/cstrike/sound/lan/zielen.wav"></audio></td></tr>
+<tr data-keyword="afk"><th scope="row"><code>afk</code></th><td>1.29 s</td><td><audio controls preload="none" aria-label="Listen to afk" src="files/cstrike/sound/lan/afk.wav"></audio></td></tr>
+<tr data-keyword="bier"><th scope="row"><code>bier</code></th><td>2.35 s</td><td><audio controls preload="none" aria-label="Listen to bier" src="files/cstrike/sound/lan/bier.wav"></audio></td></tr>
+<tr data-keyword="blamage"><th scope="row"><code>blamage</code></th><td>3.08 s</td><td><audio controls preload="none" aria-label="Listen to blamage" src="files/cstrike/sound/lan/blamage.wav"></audio></td></tr>
+<tr data-keyword="bockmist"><th scope="row"><code>bockmist</code></th><td>2.71 s</td><td><audio controls preload="none" aria-label="Listen to bockmist" src="files/cstrike/sound/lan/bockmist.wav"></audio></td></tr>
+<tr data-keyword="geil"><th scope="row"><code>geil</code></th><td>1.56 s</td><td><audio controls preload="none" aria-label="Listen to geil" src="files/cstrike/sound/lan/geil.wav"></audio></td></tr>
+<tr data-keyword="noe"><th scope="row"><code>noe</code></th><td>1.25 s</td><td><audio controls preload="none" aria-label="Listen to noe" src="files/cstrike/sound/lan/noe.wav"></audio></td></tr>
+<tr data-keyword="profi"><th scope="row"><code>profi</code></th><td>2.21 s</td><td><audio controls preload="none" aria-label="Listen to profi" src="files/cstrike/sound/lan/profi.wav"></audio></td></tr>
+<tr data-keyword="wasndalos"><th scope="row"><code>wasndalos</code></th><td>1.85 s</td><td><audio controls preload="none" aria-label="Listen to wasndalos" src="files/cstrike/sound/lan/wasndalos.wav"></audio></td></tr>
+<tr data-keyword="isklar"><th scope="row"><code>isklar</code></th><td>1.75 s</td><td><audio controls preload="none" aria-label="Listen to isklar" src="files/cstrike/sound/lan/isklar.wav"></audio></td></tr>
+<tr data-keyword="kommgleich"><th scope="row"><code>kommgleich</code></th><td>1.83 s</td><td><audio controls preload="none" aria-label="Listen to kommgleich" src="files/cstrike/sound/lan/kommgleich.wav"></audio></td></tr>
+<tr data-keyword="kumpel"><th scope="row"><code>kumpel</code></th><td>3.68 s</td><td><audio controls preload="none" aria-label="Listen to kumpel" src="files/cstrike/sound/lan/kumpel.wav"></audio></td></tr>
+<tr data-keyword="wasguckstdu"><th scope="row"><code>wasguckstdu</code></th><td>5.77 s</td><td><audio controls preload="none" aria-label="Listen to wasguckstdu" src="files/cstrike/sound/lan/wasguckstdu.wav"></audio></td></tr>
+<tr data-keyword="zonk"><th scope="row"><code>zonk</code></th><td>2.67 s</td><td><audio controls preload="none" aria-label="Listen to zonk" src="files/cstrike/sound/lan/zonk.wav"></audio></td></tr>
+<tr data-keyword="woohoo"><th scope="row"><code>woohoo</code></th><td>0.93 s</td><td><audio controls preload="none" aria-label="Listen to woohoo" src="files/cstrike/sound/lan/woohoo.wav"></audio></td></tr>
+<tr data-keyword="beer"><th scope="row"><code>beer</code></th><td>1.92 s</td><td><audio controls preload="none" aria-label="Listen to beer" src="files/cstrike/sound/lan/beer.wav"></audio></td></tr>
+<tr data-keyword="comeagain"><th scope="row"><code>comeagain</code></th><td>0.89 s</td><td><audio controls preload="none" aria-label="Listen to comeagain" src="files/cstrike/sound/lan/comeagain.wav"></audio></td></tr>
+<tr data-keyword="falsch"><th scope="row"><code>falsch</code></th><td>4.06 s</td><td><audio controls preload="none" aria-label="Listen to falsch" src="files/cstrike/sound/lan/falsch.wav"></audio></td></tr>
+</tbody></table>
+<p class="note">This page works offline when kept beside the files folder. No audio is uploaded. Technical loading has been checked; listening on actual game clients remains a separate check.</p>
+<script>
+const rows = [...document.querySelectorAll('tbody tr')];
+document.querySelector('#filter').addEventListener('input', event => {
+  const query=event.target.value.trim().toLowerCase();
+  rows.forEach(row => row.hidden=!row.dataset.keyword.includes(query));
+});
+document.addEventListener('play',event=>{
+  if(event.target.tagName==='AUDIO') document.querySelectorAll('audio').forEach(audio=>{ if(audio!==event.target) audio.pause(); });
+},true);
+</script>
+</html>

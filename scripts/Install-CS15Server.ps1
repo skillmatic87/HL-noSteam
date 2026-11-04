@@ -135,5 +135,7 @@ if (Test-Path -LiteralPath $originalConfig) { Move-Item -LiteralPath $originalCo
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'components.json') -Destination (Join-Path $Destination 'COMPONENTS.json')
 Copy-Item -LiteralPath $components.server -Destination (Join-Path $work 'hlserver4110.exe')
 Remove-Item -LiteralPath $incompleteMarker
+Write-Host 'Base server configuration is complete. Installing additional content; if this step fails, rerun Update-CS15Content.ps1 for this server.'
+& (Join-Path $PSScriptRoot 'Update-CS15Content.ps1') -ServerDirectory $Destination
 Write-Host ('Installation finished: ' + $Destination)
 Write-Host 'Original installer, source archives/extractions and notices are retained in _setup and the download cache.'

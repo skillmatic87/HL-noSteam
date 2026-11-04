@@ -10,7 +10,9 @@ Download the repository ZIP from GitHub, extract it, and run `Setup.cmd`. Use a 
 
 The default destination is `CS15Server` beside `Setup.cmd`. Setup downloads the exact files in [components.json](../scripts/components.json), checks SHA-256, extracts the original HLDS installer, preserves its license, installs the server and mods, and asks for your configuration. There is no interactive license prompt. The existing Half-Life installation is not a prerequisite.
 
-All first-time downloads require Internet access. Verified archives remain in `downloads/packages`; retain that folder to reuse them. No third-party binary is stored in this Git repository. The original HLDS installer is retained in the installed `_setup` directory, along with extracted source material and notices. The source archives are retained in the download cache.
+All first-time downloads require Internet access. Verified base archives remain in `downloads/packages`, and additional map/navigation downloads remain in `downloads/content`; retain them to reuse them. Selected additional WAV clips and a generated navigation graph are included in Git; game/server executables are downloaded separately. The original HLDS installer is retained in the installed `_setup` directory, along with extracted source material and notices. Source archives remain in the download cache.
+
+After base configuration, setup adds 13 custom maps and 28 chat sounds. See [content installation, map capacities, sound commands and rollback](CONTENT.md). An existing installation uses the separate updater after stopping the server; `Setup.cmd` still refuses to overwrite a completed installation.
 
 To choose a different destination or an existing verified cache:
 
@@ -43,16 +45,23 @@ Important local files:
 | `cstrike/addons/amxmodx/configs/mapmanager.cfg` | Vote behavior; lead time is five minutes |
 | `cstrike/addons/amxmodx/configs/SND-LIST.CFG` | Sound triggers, cooldown and quota |
 | `cstrike/addons/statsme/statsme.cfg` | Statistics and ranking behavior |
-| `cstrike/addons/statsme/statsme.log` | Binary persistent ranking; keep it when moving the server |
+| `cstrike/statsme.log` | Runtime ranking path reported by the tested CS-specific StatsMe build; keep it when moving the server |
+| `cstrike/addons/statsme/statsme.log` | Ranking file also supplied by the upstream package; preserve this file too when backing up an existing server |
 | `cstrike/addons/yapb/conf/yapb.cfg` | Bot fill target and difficulty |
 
 Keep credentials private. The repository ignores these local configuration files and generated game data. Configuration can be edited locally after stopping the server; setup is not an updater and does not merge existing configuration.
 
 ## Start and connect
 
-Run `Start-CS15.cmd`. The dedicated server uses UDP port 27015 and LAN mode. In a compatible CS 1.5 client, use `connect <server-LAN-address>:27015`; on the same PC, use `connect 127.0.0.1:27015`. Allow the game's LAN traffic in the firewall yourself if needed. No Internet port forwarding is needed for LAN play.
+Run `Start-CS15.cmd`. The dedicated server uses UDP port 27015 and LAN mode. Join using HLSW or the client's Multiplayer / LAN Games list. You can also use `connect <server-LAN-address>:27015` in the game console. Allow the game's LAN traffic in the firewall yourself if needed. No Internet port forwarding is needed for LAN play.
+
+Setup writes an explicit `+ip` LAN address into `Start-CS15.cmd`, preferring the network adapter with a gateway and excluding loopback and `169.254.*` link-local addresses. This prevents an additional TAP/VPN adapter from advertising the wrong address. Ambiguous adapter selection requires `Configure-CS15Server.ps1 -BindAddress <assigned-IPv4>`. If DHCP changes the PC's address, update `+ip` in the launcher. Use that same address in HLSW; an explicitly bound server may not answer through `127.0.0.1`.
 
 Configure the exact administrator player name and the private `setinfo _pw` value from `ADMIN.local.txt` before connecting. After connecting, `amxmodmenu` opens the stock AMXX menu. The independent StatsMe password menu is disabled, and no shared public administrator password is installed.
+
+For HLSW administration, select the server, open **Admin > Rcon Konfiguration**, enter the **Server-console RCON password** from `ADMIN.local.txt`, and click **Testen**. **Hole Protokoll (LAN)** enables live log output. Commands in HLSW's console do not need an additional `rcon` prefix.
+
+`ADMIN.local.txt` is a reference sheet, not an active configuration file. Changing its text does not change authentication. Set the actual `rcon_password` in `cstrike/server.cfg` and reload it with `exec server.cfg` from the dedicated console, or restart the server. Then update the reference sheet and HLSW's saved password. The AMXX administrator password is separate from RCON.
 
 ## Player commands
 
