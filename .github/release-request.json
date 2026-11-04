@@ -2,6 +2,7 @@
   "tag": "v0.1.0-rc.1",
   "title": "CS 1.5 LAN Server v0.1.0-rc.1",
   "prerelease": true,
+  "archiveAutoCRLF": true,
   "sources": [
     {
       "platform": "Windows",

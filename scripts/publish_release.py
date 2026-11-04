@@ -36,6 +36,8 @@ def prepare(request):
         raise ValueError('Invalid release tag.')
     if type(request['prerelease']) is not bool:
         raise ValueError('The prerelease choice must be explicit.')
+    if type(request.get('archiveAutoCRLF')) is not bool:
+        raise ValueError('The archive line-ending format must be explicit.')
     sources = request['sources']
     if len(sources) != 2 or {source['platform'] for source in sources} != {'Windows', 'Linux'}:
         raise ValueError('Exactly one Windows source and one Linux source are required.')
@@ -53,8 +55,14 @@ def prepare(request):
             run('git', 'fetch', '--depth=1', 'origin', commit)
         prefix = 'HL-noSteam-' + platform + '/'
         archive = output / f'HL-noSteam-{platform}-{tag}.zip'
-        run('git', 'archive', '--format=zip', '--prefix=' + prefix, '--output=' + str(archive), commit)
+        # Preserve the format of the already tested ZIPs on every runner OS.
+        endings = 'true' if request['archiveAutoCRLF'] else 'false'
+        run('git', '-c', 'core.autocrlf=' + endings, 'archive', '--format=zip',
+            '--prefix=' + prefix, '--output=' + str(archive), commit)
         if archive_content_digest(archive) != source['contentSHA256']:
+            with zipfile.ZipFile(archive) as bundle:
+                print('ARCHIVE_DIAGNOSTICS ' + json.dumps({name: hashlib.sha256(bundle.read(name)).hexdigest()
+                                                         for name in sorted(bundle.namelist())}), flush=True)
             raise ValueError('Archive contents differ from the tested package: ' + platform)
         with zipfile.ZipFile(archive) as bundle:
             names = set(bundle.namelist())
