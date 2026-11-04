@@ -1,0 +1,36 @@
+name: Publish verified CS15 release
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/release-request.json]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cs15-release-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'skillmatic87/HL-noSteam'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Load the requested repository revision
+        env:
+          REPOSITORY: ${{ github.repository }}
+          REQUEST_COMMIT: ${{ github.sha }}
+        run: |
+          git init .
+          git remote add origin "https://github.com/$REPOSITORY.git"
+          git fetch --depth=1 origin "$REQUEST_COMMIT"
+          git checkout --detach FETCH_HEAD
+
+      - name: Build, verify, upload and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 scripts/publish_release.py .github/release-request.json
