@@ -1,6 +1,6 @@
 # Native CS 1.5 server for Linux Mint
 
-**Status: experimental. Archive assembly is verified on Windows; Linux startup and client acceptance are not yet verified.** Development lives in the `linux-mint-server` branch. Windows keeps its existing `Setup.cmd` installer. The intended next step is to test on Mint and merge platform support into `main`, keeping maps, sounds and shared component versions in one repository.
+**Status: experimental. Archive assembly is verified on Windows. On 2026-11-04, the operator reported successful Linux startup, a Windows client connection and working administrator access. YaPB in-game configuration was denied because of missing permissions.** See [operator-reported results and remaining checks](TESTING.md#operator-reported-linux-checks-2026-11-04). Development lives in the `linux-mint-server` branch. Windows keeps its existing `Setup.cmd` installer. Further Mint acceptance checks remain before merging platform support into `main`, keeping maps, sounds and shared component versions in one repository.
 
 This installer targets an x86-64 Linux Mint computer with 32-bit compatibility libraries. It installs native Linux HLDS 3.1.1.0, the counterpart to the Windows HLDS 4.1.1.0 package. It does not require Wine, SteamCMD or a local game client. ARM is not supported. A compatible CS 1.5 client is still required for playing.
 
@@ -22,8 +22,10 @@ Then, as your regular user:
 git clone --branch linux-mint-server --single-branch https://github.com/skillmatic87/HL-noSteam.git
 cd HL-noSteam
 bash Setup-Linux.sh
-bash CS15Server-Linux/Start-CS15.sh
+bash Start-Server.sh
 ```
+
+All important entry points are in the extracted package's main folder: `Setup-Linux.sh`, `Start-Server.sh` and `Start-Panel.sh`. Run `bash Start-Panel.sh` for the English/German browser control panel, including drag-and-drop rotation and AMX/RCON/YaPB access settings. It requires Python 3.10+; the generated `CS15Server-Linux/Start-CS15.sh` launcher remains available. Keep the package files together. A custom installation is selected with `bash Start-Server.sh /path/to/server` or `bash Start-Panel.sh /path/to/server`.
 
 Alternatively, download the [branch ZIP](https://github.com/skillmatic87/HL-noSteam/archive/refs/heads/linux-mint-server.zip), extract it, open a terminal in the extracted directory and run `bash Setup-Linux.sh`. Using `bash` works even when ZIP extraction did not preserve executable permissions.
 
@@ -62,7 +64,7 @@ Installation uses `ldd` to check the selected Linux binaries and compiler depend
 1. Run `bash CS15Server-Linux/Start-CS15.sh`. Save any startup error before retrying. In the server console, run `version`, `meta list`, `amxx plugins`, `amxx modules` and `status`. Confirm the native server version, three running Metamod plugins, loaded AMXX plugins/modules and 32 slots. A missing library, `bad load`, `unknown`, crash or unresolved symbol is a failed runtime check.
 2. Join from a compatible CS 1.5 client on another LAN computer: `connect <Mint-LAN-IP>:27015`. Verify that HLSW reports the same address and slot count. For an active Mint firewall, allow UDP 27015 for your actual LAN subnet; router port forwarding is not needed for this LAN setup.
 3. Test bot play on `de_dust2` and a custom map. Test nominations and the automatic map vote five minutes before the configured time limit.
-4. Check that an unauthenticated player cannot use the admin menu, then authenticate using the private `setinfo _pw` command and run `amxmodmenu`.
+4. Check that an unauthenticated player cannot use the admin menu, then authenticate using the private `setinfo _pw` command and run `amxmodmenu`. YaPB bot menus require [separate authentication](INSTALL.md#yapb-in-game-administration); AMXX access alone does not grant YaPB access.
 5. Have two human players test chat sounds, including living/dead players, cooldown and quota. Confirm custom map resources download and appear correctly; Linux filenames are case-sensitive.
 6. Make a kill, inspect `/top15`, stop with `quit`, restart and check that the ranking persists. Preserve both possible StatsMe ranking paths described in [INSTALL.md](INSTALL.md) when backing up or migrating.
 
