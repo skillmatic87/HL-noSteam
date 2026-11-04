@@ -130,4 +130,54 @@ The shared presentation pack was checked with a fresh Windows installation and a
 
 The Windows content integration checks passed: known stock MOTD replacement, custom MOTD rejection before mutation, shared template checksums, absent/blank join setting completion, preservation of a custom join sound, second-update idempotency and exact rollback. Existing credential/ranking, map conflict and corrupt-payload protection checks also passed. Linux's nine offline tests and real-archive assembly passed; both Pawn plugins compiled, with 39 maps and 122 sound keywords retained.
 
-These checks verify installation and update behavior. No new human-client playback/visual acceptance or native Linux execution was performed for this presentation change; Linux runtime acceptance remains open.
+These checks verify installation and update behavior. No new human-client playback/visual acceptance or native Linux execution was performed during the automated presentation checks. Later operator testing is recorded below.
+
+## Operator-reported Linux checks, 2026-11-04
+
+The operator reports the following results from the Linux installation. These are manual operator results, not automated checks performed on the Windows development host.
+
+| Check | Reported result |
+| --- | --- |
+| Native Linux startup | Server started successfully |
+| Windows client to Linux server | Connected successfully from Windows |
+| Administrator access | Operator obtained administrator access and reports it working; the exact authentication method and commands were not recorded |
+| YaPB in-game configuration | Initially denied because of missing permissions; this records the earlier test, before the numbered follow-up below |
+
+The installers configure AMXX administrator authentication but do not configure YaPB's separate remote-control password. The pinned YaPB 4.4.957 defaults to an empty `yb_password` and the `_ybpw` userinfo key. See [YaPB access instructions](INSTALL.md#yapb-in-game-administration).
+
+The Mint version, exact tested commit and console output were not supplied. Later operator results supplement this initial report below. Multi-client sound playback, Linux ranking persistence and 32-client load remain separate acceptance checks.
+
+## Additional operator-reported gameplay checks, 2026-11-04
+
+The operator reports a successful hands-on test of these server functions:
+
+| Function | Reported result |
+| --- | --- |
+| Server startup and operation | Starts and runs successfully |
+| Administrator access | Operator obtained administrator rights |
+| Map changes | Working |
+| Map voting | Working |
+| In-game sounds | Working |
+
+These results record the operator's report. The report did not identify individual commands, vote timing or the number of clients used.
+
+## Numbered operator checklist follow-up, 2026-11-04
+
+The operator explicitly reports checklist items **2, 4, 5 and 6** as working:
+
+| Item | Checklist scope | Reported result |
+| --- | --- | --- |
+| 2 | Automatic map voting five minutes before map end, nominations appearing in the vote, and RTV | Working |
+| 4 | A normal player without administrator authentication cannot use privileged menus/commands | Working |
+| 5 | Custom maps on a fresh client, including downloads and required visual/audio resources | Working |
+| 6 | Bots on fun maps, including navigation and population adjustment as humans join | Working |
+
+These are confirmations of the numbered checklist items, not independently captured command logs. The earlier YaPB permission report is retained separately because this follow-up did not name a specific bot-menu authentication command.
+
+The remaining numbered checks are **1** (ranking across map changes and server restarts), **3** (simultaneous playback and sound controls with two real clients), and **7** (operator acceptance of panel settings followed by restart and undo). A longer gameplay session and the separate 32-client capacity check are not covered by these four confirmations.
+
+## Control panel and main-folder entry points, 2026-11-04
+
+The English/German panel passed 19 Python helper/access regression tests. A real Chrome session exercised drag-and-drop with filtered map lists, arrow controls, saved cycle reload, independent voting, AMX renaming/new accounts, RCON/YaPB edits, blank-password preservation, secret exclusion from profiles/review, private backup/restore, pending game edits and stale-revision rejection. The separate native Windows integration started disposable HLDS on UDP 27036, received live status, blocked writes while running, stopped with RCON quit, saved ten configuration files, restored exact backups and rejected an external edit.
+
+Seven launcher checks passed on Windows with Git Bash: main-folder-relative lookup from another working directory, paths with spaces, custom destinations, exit-status forwarding, incomplete/missing installation rejection, Windows `-WhatIf`, Linux argument boundaries and panel-helper dispatch. Nine Linux installer safety tests and the Windows setup-input/LAN-address checks also passed. These checks used disposable data; operator credentials were not changed. Native Linux launch execution remains distinct from Bash-wrapper verification on Windows.

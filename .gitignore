@@ -5,6 +5,13 @@
 !/README.md
 !/Setup.cmd
 !/Update-Content.cmd
+!/Configure-Server.html
+!/Start-Panel.cmd
+!/Start-Server.cmd
+!/Start-Panel.sh
+!/Start-Server.sh
+!/START-HERE.txt
+!/Setup-Linux.sh
 !/docs/
 !/scripts/
 !/content/
@@ -21,6 +28,7 @@
 **/logs/
 **/downloads/
 **/backups/
+**/_configurator/
 **/runtime/
 **/*.exe
 **/*.dll
@@ -31,3 +39,5 @@
 **/*.pak
 **/*.dem
 **/*.sav
+**/__pycache__/
+**/*.pyc

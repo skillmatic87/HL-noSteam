@@ -2,13 +2,17 @@
 
 ## Preview status
 
-The installer has been tested in a new folder independently of the existing Half-Life game installation. Server startup, plugin loading, map changes and bot gameplay work. Human-client connection, permission enforcement and audible chat sounds still require acceptance testing. See [test results](TESTING.md).
+The installer has been tested in a new folder independently of the existing Half-Life game installation. Server startup and plugin loading passed automated integration checks. The operator additionally reports client connections, administrator access, permission enforcement, map changes/votes, sounds, fresh-client custom maps and bot play working. Remaining acceptance checks include ranking persistence, simultaneous playback with two human clients and 32-client capacity. See [test results](TESTING.md).
 
 ## Download and setup
 
 Download the repository ZIP from GitHub, extract it, and run `Setup.cmd`. Use a writable folder with sufficient space for the downloaded archives, extracted originals and installed server. Keep the extracted files together.
 
 The default destination is `CS15Server` beside `Setup.cmd`. Setup downloads the exact files in [components.json](../scripts/components.json), checks SHA-256, extracts the original HLDS installer, preserves its license, installs the server and mods, and asks for your configuration. There is no interactive license prompt. The existing Half-Life installation is not a prerequisite.
+
+After setup, the main folder contains the entry points you need: **Start-Server.cmd** opens the server console and **Start-Panel.cmd** opens the browser control panel. Keep `scripts`, `content` and the generated `CS15Server` folder beside them; these launchers work relative to the package location. The panel requires Python 3.10+. Directly opening `Configure-Server.html` only provides a preview. See [panel controls and administration](CONFIGURATOR.md).
+
+For a custom installation location, use `Start-Server.cmd -ServerDirectory "D:\YourServer"` or `Start-Panel.cmd -ServerDirectory "D:\YourServer"`. The original `CS15Server/Start-CS15.cmd` launcher remains available as well. Running `Start-Server.cmd -WhatIf` checks the chosen installation without starting HLDS.
 
 All first-time downloads require Internet access. Verified base archives remain in `downloads/packages`, and additional map/navigation downloads remain in `downloads/content`; retain them to reuse them. Selected additional WAV clips and a generated navigation graph are included in Git; game/server executables are downloaded separately. The original HLDS installer is retained in the installed `_setup` directory, along with extracted source material and notices. Source archives remain in the download cache.
 
@@ -53,7 +57,7 @@ Keep credentials private. The repository ignores these local configuration files
 
 ## Start and connect
 
-Run `Start-CS15.cmd`. The dedicated server uses UDP port 27015 and LAN mode. Join using HLSW or the client's Multiplayer / LAN Games list. You can also use `connect <server-LAN-address>:27015` in the game console. Allow the game's LAN traffic in the firewall yourself if needed. No Internet port forwarding is needed for LAN play.
+Run `Start-Server.cmd` in the package's main folder, or use **Start server** in `Start-Panel.cmd`. The original launcher inside the installed server is `Start-CS15.cmd`. The dedicated server uses UDP port 27015 and LAN mode. Join using HLSW or the client's Multiplayer / LAN Games list. You can also use `connect <server-LAN-address>:27015` in the game console. Allow the game's LAN traffic in the firewall yourself if needed. No Internet port forwarding is needed for LAN play.
 
 Setup writes an explicit `+ip` LAN address into `Start-CS15.cmd`, preferring the network adapter with a gateway and excluding loopback and `169.254.*` link-local addresses. This prevents an additional TAP/VPN adapter from advertising the wrong address. Ambiguous adapter selection requires `Configure-CS15Server.ps1 -BindAddress <assigned-IPv4>`. If DHCP changes the PC's address, update `+ip` in the launcher. Use that same address in HLSW; an explicitly bound server may not answer through `127.0.0.1`.
 
@@ -62,6 +66,26 @@ Configure the exact administrator player name and the private `setinfo _pw` valu
 For HLSW administration, select the server, open **Admin > Rcon Konfiguration**, enter the **Server-console RCON password** from `ADMIN.local.txt`, and click **Testen**. **Hole Protokoll (LAN)** enables live log output. Commands in HLSW's console do not need an additional `rcon` prefix.
 
 `ADMIN.local.txt` is a reference sheet, not an active configuration file. Changing its text does not change authentication. Set the actual `rcon_password` in `cstrike/server.cfg` and reload it with `exec server.cfg` from the dedicated console, or restart the server. Then update the reference sheet and HLSW's saved password. The AMXX administrator password is separate from RCON.
+
+### YaPB in-game administration
+
+YaPB 4.4.957 authenticates remote bot commands separately from AMXX. The current installers leave `yb_password` empty, so the AMXX `setinfo _pw` login does not grant access to YaPB menus. See the [pinned access implementation](https://github.com/yapb/yapb/blob/4.4.957/src/control.cpp) and [official dedicated-server instructions](https://yapb.github.io/docs/en/configuring/botusage/#bot-management-on-a-dedicated-server).
+
+On the server, edit `cstrike/addons/yapb/conf/yapb.cfg` to set a unique private bot password and retain the default key:
+
+```text
+yb_password "<your-private-bot-password>"
+yb_password_key "_ybpw"
+```
+
+Apply the same two commands in the dedicated server console for the current session, or restart after saving the file. Then enter in the game client's console:
+
+```text
+setinfo _ybpw "<your-private-bot-password>"
+yb menu
+```
+
+Replace the placeholder with the same private password on both sides. If access does not update immediately, reconnect and try `yb menu` again. Persist the server settings in `yapb.cfg` so a restart or map change does not restore the empty password. Bot-menu access still needs an in-game acceptance check.
 
 ## Player commands
 
