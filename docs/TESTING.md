@@ -123,3 +123,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Get-CS15ServerStat
 `Prepare-CS15PluginTest.ps1` is a development helper requiring the old research layout and baseline `s` directory. It now selects StatsMe 2.7.0. New installations should use `Install-CS15Server.ps1` instead.
 
 `Invoke-CS15TestCommand.ps1` uses loopback port 27025 by default; `-ServerAddress` and `-Port` select an explicitly bound local server. It refuses addresses not assigned to this PC. With `-ServerDirectory`, it reads the quoted local credential from that installation, including operator-selected ASCII passwords; otherwise it uses the baseline's disposable credential file. Credentials are not printed. Raw logs, saved statistics, credentials, game binaries and research downloads are excluded from Git.
+
+## Shared welcome screen and bot chat, 2026-11-04
+
+The shared presentation pack was checked with a fresh Windows installation and a fresh Linux archive assembly. Both installed the exact manifest-pinned MOTD and English bot-chat bytes and configured `SND_JOIN; sound/lan/welcome.wav`. The YaPB 4.4 parser was checked against 838 selectable messages and 42 reply topics, including valid placeholders and room for player names in chat lines.
+
+The Windows content integration checks passed: known stock MOTD replacement, custom MOTD rejection before mutation, shared template checksums, absent/blank join setting completion, preservation of a custom join sound, second-update idempotency and exact rollback. Existing credential/ranking, map conflict and corrupt-payload protection checks also passed. Linux's nine offline tests and real-archive assembly passed; both Pawn plugins compiled, with 39 maps and 122 sound keywords retained.
+
+These checks verify installation and update behavior. No new human-client playback/visual acceptance or native Linux execution was performed for this presentation change; Linux runtime acceptance remains open.

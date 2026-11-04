@@ -30,7 +30,7 @@ $files = New-Object Collections.Generic.List[object]
 function Add-ContentBytes {
     param($Entry, [byte[]]$Bytes)
     if ((Get-CS15BytesHash $Bytes) -ne $Entry.sha256) { throw ('Content file checksum mismatch: ' + $Entry.target) }
-    $files.Add([pscustomobject]@{Relative=$Entry.target; Bytes=$Bytes; Hash=$Entry.sha256; Preserve=[bool]$Entry.preserveExisting})
+    $files.Add([pscustomobject]@{Relative=$Entry.target; Bytes=$Bytes; Hash=$Entry.sha256; Preserve=[bool]$Entry.preserveExisting; ReplaceHashes=@($Entry.replaceExistingSha256)})
 }
 foreach ($entry in $manifest.localFiles) {
     $source = Get-CS15ContentPath $ContentDirectory $entry.source
@@ -86,7 +86,8 @@ foreach ($file in $files) {
             Write-Host ('Keeping existing shared resource: ' + $file.Relative)
             continue
         }
-        if (-not $previousHashes.ContainsKey($file.Relative) -or $actual -ne $previousHashes[$file.Relative]) { throw ('An existing file differs from the pack and was not overwritten: ' + $file.Relative) }
+        $previouslyManaged = $previousHashes.ContainsKey($file.Relative) -and $actual -eq $previousHashes[$file.Relative]
+        if (-not $previouslyManaged -and $actual -notin $file.ReplaceHashes) { throw ('An existing file differs from the pack and was not overwritten: ' + $file.Relative) }
     }
     $changes.Add($file)
 }
@@ -99,12 +100,27 @@ function Add-TextChange {
     $changes.Add([pscustomobject]@{Relative=$Relative;Bytes=$bytes;Hash=$hash;Preserve=$false})
 }
 function Add-AppendedText {
-    param([string]$Relative, [string[]]$Additions)
-    if (-not $Additions.Count) { return }
+    param([string]$Relative, [string[]]$Additions, [string]$JoinSound)
+    if (-not $Additions.Count -and -not $JoinSound) { return }
     $target = Get-CS15ContentPath $ServerDirectory $Relative
     [byte[]]$before = [IO.File]::ReadAllBytes($target)
+    [byte[]]$prefix = $before
+    if ($JoinSound) {
+        # Latin-1 round-trips every original byte, including UTF-8 comments.
+        $encoding = [Text.Encoding]::GetEncoding(28591)
+        $text = $encoding.GetString($before)
+        $joinEntries = [regex]::Matches($text,'(?im)^[ \t]*SND_JOIN[ \t]*;[^\r\n]*')
+        if ($joinEntries.Count -gt 1) { throw 'Multiple SND_JOIN settings: resolve them before updating.' }
+        if (-not $joinEntries.Count) { $Additions = @($Additions) + ('SND_JOIN; ' + $JoinSound) }
+        elseif ($joinEntries[0].Value -match ';[ \t]*$') {
+            $text = [regex]::Replace($text,'(?im)^([ \t]*SND_JOIN[ \t]*;)[ \t]*(\r?)$',('${1} ' + $JoinSound + '${2}'))
+            $prefix = $encoding.GetBytes($text)
+        }
+    }
     $separator = if ($before.Length -and $before[$before.Length - 1] -notin @(10,13)) { "`r`n" } else { '' }
-    [byte[]]$bytes = $before + [Text.Encoding]::ASCII.GetBytes($separator + ($Additions -join "`r`n") + "`r`n")
+    [byte[]]$bytes = $prefix
+    if ($Additions.Count) { $bytes += [Text.Encoding]::ASCII.GetBytes($separator + ($Additions -join "`r`n") + "`r`n") }
+    if ((Get-CS15BytesHash $bytes) -eq (Get-CS15BytesHash $before)) { return }
     $changes.Add([pscustomobject]@{Relative=$Relative;Bytes=$bytes;Hash=(Get-CS15BytesHash $bytes);Preserve=$false})
 }
 foreach ($relative in @('cstrike/mapcycle.txt','cstrike/addons/amxmodx/configs/maps.ini')) {
@@ -130,7 +146,7 @@ foreach ($sound in $manifest.sounds) {
         foreach ($line in $entries) { $parts=$line.Split(';'); if ($parts.Count -ne 2 -or $parts[1].Trim() -ine $sound.path) { throw ('An existing sound keyword has a different mapping: ' + $sound.keyword) } }
     } else { $soundAdditions.Add(($sound.keyword + '; ' + $sound.path)) }
 }
-Add-AppendedText $soundRelative $soundAdditions.ToArray()
+Add-AppendedText $soundRelative $soundAdditions.ToArray() -JoinSound $manifest.joinSound
 $installed = [ordered]@{schemaVersion=1;id=$manifest.id;files=$managed.ToArray();maps=@($manifest.maps.name);sounds=@($manifest.sounds.keyword)}
 Add-TextChange '_content/installed.json' @($installed | ConvertTo-Json -Depth 6)
 if ($changes.Count -eq 0) { Write-Host 'Content is already installed. No files changed.'; return }

@@ -11,3 +11,9 @@ Inspected on 2026-11-03. Exact URLs and SHA-256 values are in [pack.json](pack.j
 - Expansion on 2026-11-04: all 80 further files marked by the operator were included, without trimming their duration. The manifest preserves each original selection number and source checksum. Three keyword collisions were resolved as `camper_agc`, `benny_cp` and `haha_cp`; existing commands keep their mappings. The pack now contains 108 clips, giving 122 keywords with the 14 original defaults.
 
 Selected audio assets and the generated graph are included in Git. Server executables, credentials, the complete source sound collection, transcription model/environment, map ZIPs and raw test logs remain outside tracked project files.
+
+## Shared server presentation, 2026-11-04
+
+The English bot-chat template retains the original YaPB 4.4.957 file and adds project-authored LAN-style lines, including repository and installation references. The parser in that pinned YaPB version selects 838 messages across its regular banks and 42 reply topics. MOTD text was written for this server package. Both templates are pinned in the manifest and shared by Windows and Linux setup. Known upstream replacement hashes refer only to the original CS 1.5 MOTD and YaPB English chat, protecting operator-customized files.
+
+The join announcement reuses the existing `cp/welcome.wav` selection, installed as `sound/lan/welcome.wav`; it is not a newly sourced sound. VOX authorship is unconfirmed. No Matrix clips or newly suggested song excerpts are added by this update.
