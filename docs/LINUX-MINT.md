@@ -51,6 +51,7 @@ For unattended setup, pass `--settings /path/to/settings.local.json`, using the 
 - Map Manager 2.5.61 with the same narrow CS 1.5 round-event adaptation and a vote five minutes before map end.
 - Sank Sounds 1.9.1, 39 maps total and 122 chat-sound commands from the shared content manifest.
 - Name/password administrator authentication and server-local name-based ranking with automatic resets disabled.
+- Shared welcome MOTD, welcome join sound and 838 selectable English bot-chat messages, including occasional repository references and platform installation links. See [presentation and existing-installation update steps](CONTENT.md#welcome-screen-and-bot-chat).
 
 The AMXX Pawn plugins are compiled using the Linux compiler during installation. The generated launcher runs `hlds` directly, sets its local library search path and forwards additional command-line arguments. It does not automatically restart a crashed server or install a system service.
 

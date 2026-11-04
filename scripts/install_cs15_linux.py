@@ -270,7 +270,10 @@ def install_content(server, cache):
         if target.exists() and target.read_bytes() != data:
             if entry.get('preserveExisting'):
                 return
-            raise ValueError(f'Content would overwrite a different file: {target}')
+            presentation = entry['target'] in ('cstrike/motd.txt', 'cstrike/addons/yapb/conf/lang/en_chat.cfg')
+            known = hashlib.sha256(target.read_bytes()).hexdigest() in entry.get('replaceExistingSha256', [])
+            if not (presentation and known):
+                raise ValueError(f'Content would overwrite a different file: {target}')
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(data)
         managed.append({'path': entry['target'], 'sha256': entry['sha256']})
@@ -301,6 +304,11 @@ def install_content(server, cache):
         write_text(path, lines)
     path = server / 'cstrike/addons/amxmodx/configs/SND-LIST.CFG'
     lines = path.read_text(encoding='ascii')
+    join_sound = manifest.get('joinSound')
+    if join_sound:
+        if join_sound not in [item['path'] for item in manifest['sounds']]:
+            raise ValueError('Join sound must be a verified sound in this pack.')
+        lines = re.sub(r'(?m)^(SND_JOIN;)[ \t]*$', lambda match: match[1] + ' ' + join_sound, lines)
     lines += ''.join(f"{s['keyword']}; {s['path']}\n" for s in manifest['sounds'])
     write_text(path, lines)
     write_text(server / '_content/installed.json', json.dumps({'schemaVersion': 1, 'id': manifest['id'], 'files': managed}, indent=2) + '\n')

@@ -23,6 +23,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Restore-CS15Conten
 
 Restore checks that affected files have not changed since the update and otherwise stops before mutation. Backups are retained. A new installation completes its base configuration before adding this pack; if a content download fails, retry the updater directly instead of rerunning Setup.
 
+## Welcome screen and bot chat
+
+Windows and Linux fresh installations use the same checksum-pinned `cstrike/motd.txt` and `cstrike/addons/yapb/conf/lang/en_chat.cfg` from `content/files`. The MOTD welcomes players, lists sound/stat/map commands and thanks contributors with the repository URL. The English chat has 838 selectable messages under YaPB 4.4.957: greetings, kill banter, bomb messages, spectator chat and 42 reply topics. The existing chat frequency is unchanged.
+
+The `GITHUB`/`REPO`, `WINDOWS` and `LINUX`/`MINT` reply groups include the repository and installation links. Windows points to `main`; Linux points to the experimental `linux-mint-server` branch. There are occasional spontaneous repo mentions as well. Message text and name placeholders were checked against the installed YaPB version; in-game selection remains random.
+
+`SND_JOIN; sound/lan/welcome.wav` uses the existing 1.64-second welcome clip already in the sound pack. Sank Sounds plays the join announcement to players whose sound playback is enabled. The clip says "Welcome aboard!"; its original VOX provenance has not been verified. It does not add another chat keyword or change the 122-keyword total.
+
+On Windows, the content updater replaces the checksum-matched upstream MOTD/chat or previously managed, unedited copies. A custom MOTD or chat file stops the update before mutation; back it up and deliberately adopt the supplied template if desired. Empty or absent `SND_JOIN` settings receive the welcome clip; an existing custom join sound is retained. All changes participate in the same backup and rollback as the maps and sounds.
+
+Existing Linux installations do not yet have an automatic content updater. Stop the server, back up its MOTD, English bot chat and `SND-LIST.CFG`, then copy those two template files from `content/files/cstrike` to the matching paths in the installed `cstrike` folder. Set the single `SND_JOIN` line as above if wanted, keeping other sound settings and mappings. Fresh Linux setup applies these defaults automatically. See [Linux setup and verification](https://github.com/skillmatic87/HL-noSteam/blob/linux-mint-server/docs/LINUX-MINT.md).
+
+Restart the installed server after applying changes. Updating Git alone does not modify an installed server. Matrix/music research suggestions are not included as downloaded assets or enabled commands.
+
 ## Maps
 
 Counts come from BSP spawn entities; original maps are not edited. Capacity values are included in Map Manager and legacy mapcycle entries. They guide automatic selection, but do not change the server's 32 slots or prevent an administrator forcing a small map. Map Manager counts human players for eligibility; bot targets must also fit the map.

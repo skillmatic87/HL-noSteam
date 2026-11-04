@@ -40,7 +40,12 @@ function Get-CS15ContentManifest {
     if ($manifest.schemaVersion -ne 1 -or $manifest.id -notmatch '^[a-z0-9-]+$') { throw 'Invalid content manifest.' }
     $targets = @{}
     foreach ($file in @($manifest.localFiles) + @($manifest.packages | ForEach-Object { $_.files })) {
-        if ($file.sha256 -notmatch '^[a-f0-9]{64}$' -or $file.target -notmatch '^(cstrike/(maps/|sound/|gfx/env/|models/|sprites/|overviews/|addons/yapb/data/(graph|pwf)/)|_content/notices/)') { throw 'Invalid content file entry.' }
+        $presentationTarget = $file.target -in @('cstrike/motd.txt','cstrike/addons/yapb/conf/lang/en_chat.cfg')
+        if ($file.sha256 -notmatch '^[a-f0-9]{64}$' -or (-not $presentationTarget -and $file.target -notmatch '^(cstrike/(maps/|sound/|gfx/env/|models/|sprites/|overviews/|addons/yapb/data/(graph|pwf)/)|_content/notices/)')) { throw 'Invalid content file entry.' }
+        if ($file.replaceExistingSha256) {
+            if (-not $presentationTarget) { throw 'Known-file replacement is limited to the MOTD and English bot chat.' }
+            foreach ($hash in $file.replaceExistingSha256) { if ($hash -notmatch '^[a-f0-9]{64}$') { throw 'Invalid known-file checksum.' } }
+        }
         $null = Get-CS15ContentPath -Root $ContentDirectory -Relative $file.target
         if ($targets.ContainsKey($file.target)) { throw ('Duplicate content target: ' + $file.target) }
         $targets[$file.target] = $true
@@ -58,5 +63,6 @@ function Get-CS15ContentManifest {
         if ($sound.keyword -notmatch '^[a-z0-9_-]{1,30}$' -or $sound.path -notmatch '^sound/lan/[a-z0-9_-]+\.wav$' -or $keywords.ContainsKey($sound.keyword) -or -not $targets.ContainsKey(('cstrike/' + $sound.path))) { throw 'Invalid, duplicate or missing sound trigger.' }
         $keywords[$sound.keyword] = $true
     }
+    if ($manifest.joinSound -and ($manifest.joinSound -notin @($manifest.sounds.path))) { throw 'Join sound must be a verified sound in this pack.' }
     $manifest
 }

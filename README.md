@@ -20,6 +20,8 @@ See [installation and operation](docs/INSTALL.md) for commands, configuration, c
 
 The additional LAN pack installs **13 custom maps, including `de_rats_2001`, `awp_map`, `fy_iceworld` and `fy_pool_day`, plus 108 chat sounds**. The sound pack includes 80 further clips selected by the operator. Together with the 14 original sounds, installations have 122 chat commands. See [content, commands and existing-server updates](docs/CONTENT.md). Open [the offline listening page](content/Listen.html) to preview the additional sounds. Existing default installations can use `Update-Content.cmd` after stopping the server.
 
+The shared pack also supplies a welcome MOTD with player commands and the repository link, `welcome.wav` on joins, and **838 selectable English bot-chat messages** in the classic LAN style. Bots occasionally mention the repository and can reply with Windows and experimental Linux Mint installation links. Chat frequency keeps the YaPB default. See [welcome screen, bot chat and update protection](docs/CONTENT.md#welcome-screen-and-bot-chat).
+
 ## First release
 
 The package should be easy to install by downloading, extracting and copying files. It must include:

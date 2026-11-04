@@ -34,6 +34,8 @@ $cycleBytes=[byte[]](@(239,187,191)+[Text.Encoding]::UTF8.GetBytes("// Preserve 
 Write-Fixture 'cstrike/mapcycle.txt' $cycleBytes
 Write-Fixture 'cstrike/addons/amxmodx/configs/maps.ini' ([Text.Encoding]::ASCII.GetBytes("; Operator entry`r`nde_dust2`r`n"))
 Write-Fixture 'cstrike/addons/amxmodx/configs/SND-LIST.CFG' ([Text.Encoding]::ASCII.GetBytes("SND_MAX; 100`r`nSND_DELAY; 3`r`nheadshot; sound/misc/headshot.wav`r`n"))
+$stockMotd = [Text.Encoding]::ASCII.GetBytes("You are playing Counter-Strike v1.5`nVisit the official CS web site @`nwww.counter-strike.net")
+Write-Fixture 'cstrike/motd.txt' $stockMotd
 Write-Fixture 'cstrike/gfx/env/snowup.tga' ([Text.Encoding]::ASCII.GetBytes('Keep an existing shared resource.'))
 $initial=Get-FixtureSnapshot
 $null=& (Join-Path $PSScriptRoot 'Update-CS15Content.ps1') -ServerDirectory $fixture -CacheDirectory $CacheDirectory -WhatIf
@@ -55,6 +57,17 @@ Assert-True $rejected 'A conflicting map was not rejected.'
 Assert-Snapshot $conflictBefore (Get-FixtureSnapshot)
 Remove-Item -LiteralPath (Get-CS15ContentPath $fixture 'cstrike/maps/awp_map.bsp')
 Write-Host 'PASS: conflicting map is rejected before any server files change.'
+
+Write-Fixture 'cstrike/motd.txt' ([Text.Encoding]::ASCII.GetBytes('Operator MOTD must survive.'))
+$customBefore=Get-FixtureSnapshot
+$rejected=$false
+try { & (Join-Path $PSScriptRoot 'Update-CS15Content.ps1') -ServerDirectory $fixture -CacheDirectory $CacheDirectory | Out-Null } catch {
+    if ($_.Exception.Message -like 'An existing file differs*motd.txt') { $rejected=$true } else { throw }
+}
+Assert-True $rejected 'A custom MOTD was not protected.'
+Assert-Snapshot $customBefore (Get-FixtureSnapshot)
+Write-Fixture 'cstrike/motd.txt' $stockMotd
+Write-Host 'PASS: custom MOTD is rejected before mutation; known stock MOTD remains eligible.'
 
 $corrupt=Join-Path $project ('runtime\corrupt-content-'+[Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $corrupt -Force | Out-Null
@@ -82,12 +95,29 @@ foreach ($path in @('hlds.exe','cstrike\liblist.gam','cstrike\server.cfg','cstri
 Assert-True ([Convert]::ToBase64String($updatedCycle[0..($cycleBytes.Length-1)]) -eq [Convert]::ToBase64String($cycleBytes)) 'Original Unicode or line endings were changed.'
 $soundText=[IO.File]::ReadAllText((Join-Path $fixture 'cstrike\addons\amxmodx\configs\SND-LIST.CFG'))
 Assert-True ($soundText.StartsWith("SND_MAX; 100`r`nSND_DELAY; 3`r`n")) 'Local sound quota or delay changed.'
+Assert-True ($soundText -match '(?m)^SND_JOIN; sound/lan/welcome\.wav\r?$') 'Welcome join sound is missing.'
+foreach ($relative in @('cstrike/motd.txt','cstrike/addons/yapb/conf/lang/en_chat.cfg')) {
+    $entry = @($manifest.localFiles | Where-Object { $_.target -eq $relative })[0]
+    Assert-True ((Get-FileHash -LiteralPath (Get-CS15ContentPath $fixture $relative)).Hash -ieq $entry.sha256) ('Shared presentation file differs: ' + $relative)
+}
 $mapsText=[IO.File]::ReadAllText((Join-Path $fixture 'cstrike\addons\amxmodx\configs\maps.ini'))
 Assert-True ($mapsText -match '(?m)^de_rats_2001 0 20\r?$') 'Rats 2001 capacity is missing.'
 Write-Host ('PASS: thirteen maps and '+@($manifest.sounds).Count+' sounds installed; credentials, ranking, original text and shared resources preserved.')
 $null=& (Join-Path $PSScriptRoot 'Update-CS15Content.ps1') -ServerDirectory $fixture -CacheDirectory $CacheDirectory
 Assert-Snapshot $after (Get-FixtureSnapshot)
 Write-Host 'PASS: a second update makes no changes and adds no duplicate entries.'
+
+$soundPath=Get-CS15ContentPath $fixture 'cstrike/addons/amxmodx/configs/SND-LIST.CFG'
+[byte[]]$soundBefore=[IO.File]::ReadAllBytes($soundPath)
+[IO.File]::WriteAllText($soundPath,$soundText.Replace('SND_JOIN; sound/lan/welcome.wav','SND_JOIN;'),[Text.Encoding]::ASCII)
+$null=& (Join-Path $PSScriptRoot 'Update-CS15Content.ps1') -ServerDirectory $fixture -CacheDirectory $CacheDirectory
+Assert-Snapshot $after (Get-FixtureSnapshot)
+[IO.File]::WriteAllText($soundPath,$soundText.Replace('SND_JOIN; sound/lan/welcome.wav','SND_JOIN; sound/custom/operator.wav'),[Text.Encoding]::ASCII)
+$customJoin=Get-FixtureSnapshot
+$null=& (Join-Path $PSScriptRoot 'Update-CS15Content.ps1') -ServerDirectory $fixture -CacheDirectory $CacheDirectory
+Assert-Snapshot $customJoin (Get-FixtureSnapshot)
+[IO.File]::WriteAllBytes($soundPath,$soundBefore)
+Write-Host 'PASS: blank join setting is filled; a custom join sound is preserved.'
 
 $changedSound=Join-Path $fixture 'cstrike\sound\lan\moin.wav'
 $originalSound=[IO.File]::ReadAllBytes($changedSound)

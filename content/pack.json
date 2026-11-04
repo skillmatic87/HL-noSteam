@@ -1204,6 +1204,22 @@
       "source": "files/cstrike/sound/lan/what_is_that.wav",
       "target": "cstrike/sound/lan/what_is_that.wav",
       "sha256": "1b2fd52644759be5b27c9fd426b3de0fb352b66a386ce7efb5f4a3ff694ae971"
+    },
+    {
+      "source": "files/cstrike/motd.txt",
+      "target": "cstrike/motd.txt",
+      "sha256": "a1dd39b41d700b3bd65a22bffe960f2ce3a643d40bea5d5500d2f77979764472",
+      "replaceExistingSha256": [
+        "4d96941dfd1278a133b7d53efbcb3ddce863da6c7c1564fa65593bde83430e68"
+      ]
+    },
+    {
+      "source": "files/cstrike/addons/yapb/conf/lang/en_chat.cfg",
+      "target": "cstrike/addons/yapb/conf/lang/en_chat.cfg",
+      "sha256": "99225fd481188f38e9cd9fff8f336193effb84e1a7c6569103709fbedd438580",
+      "replaceExistingSha256": [
+        "aa69f0fdd64c796ef5b7efdd1ef1d6263f969b5b436836a1a2d0c396fb4b0b70"
+      ]
     }
   ],
   "maps": [
@@ -2540,5 +2556,6 @@
       "selectionBatch": "2026-11-04",
       "sourceSelectionNumber": 233
     }
-  ]
+  ],
+  "joinSound": "sound/lan/welcome.wav"
 }

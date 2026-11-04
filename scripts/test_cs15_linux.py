@@ -110,6 +110,9 @@ def integration(cache, compiler):
     for item in manifest['sounds']:
         assert (game / item['path']).is_file(), item['path']
         assert f"{item['keyword']}; {item['path']}" in sound_config
+    assert f"SND_JOIN; {manifest['joinSound']}" in sound_config
+    for relative in ('cstrike/motd.txt', 'cstrike/addons/yapb/conf/lang/en_chat.cfg'):
+        assert (target / relative).read_bytes() == (installer.ROOT / 'content/files' / relative).read_bytes()
     for item in manifest['maps']:
         assert (game / f"maps/{item['name']}.bsp").is_file()
         assert (game / f"addons/yapb/data/graph/{item['name']}.graph").is_file()
