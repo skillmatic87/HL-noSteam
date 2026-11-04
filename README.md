@@ -2,6 +2,8 @@
 
 A downloadable **Counter-Strike 1.5 dedicated server package for Windows LAN games with 32 player slots**.
 
+**Linux Mint development:** this branch adds a native Linux installer. See [Linux Mint setup and verification](docs/LINUX-MINT.md). On Mint, run `bash Setup-Linux.sh` after installing the documented 32-bit dependencies. Linux archive assembly is verified; Linux runtime acceptance is still open. The Windows installer remains available below.
+
 **Status: preview installer available; client acceptance tests remain open.** A fresh installation starts with 32 slots, StatsMe, bots, the admin plugins, Map Manager and Sank Sounds. This is not yet a fully accepted release.
 
 ## Install the preview

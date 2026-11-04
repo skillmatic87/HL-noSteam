@@ -5,6 +5,7 @@
 !/README.md
 !/Setup.cmd
 !/Update-Content.cmd
+!/Setup-Linux.sh
 !/docs/
 !/scripts/
 !/content/
@@ -31,3 +32,5 @@
 **/*.pak
 **/*.dem
 **/*.sav
+**/__pycache__/
+**/*.pyc

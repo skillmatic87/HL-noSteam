@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "description": "Linux replacements for components.json; all other components are shared, except the Windows-only unpacker.",
+  "components": [
+    {"id":"server","file":"hlds_l_3110_full.tar.gz","url":"https://archive.org/download/goldsrc_hlds_won_linux/hlds_l_3110_full.tar.gz","sha256":"5f288555737bf6246df8448ba57defad2aecb57c2e12b889c6d21b72258cc980"},
+    {"id":"metamod","file":"metamod-p-v1.21p109-linux_ubuntu1804.tar.xz","url":"https://github.com/Bots-United/metamod-p/releases/download/v1.21p109/metamod-p-v1.21p109-linux_ubuntu1804.tar.xz","sha256":"3b77d804cd5687ee18a8535ec02d085e42c9d0da1c12a0683c6aeb25e88d3e1e"},
+    {"id":"amxx","file":"amxmodx-1.8.1-base.tar.gz","url":"https://master.dl.sourceforge.net/project/amxmodx/AMX%20Mod%20X%20Base/1.8.1/amxmodx-1.8.1-base.tar.gz?viasf=1","sha256":"90988646a722a11deb73eeeb4c7ff0b955492df36a5884532f683df9338eb128"},
+    {"id":"bots","file":"yapb-4.4.957-linux.tar.xz","url":"https://github.com/yapb/yapb/releases/download/4.4.957/yapb-4.4.957-linux.tar.xz","sha256":"8c095ac89b9b2ccc70a66a71d608e1a570b5268c57c6083ced8c06161533a4b1"}
+  ]
+}
