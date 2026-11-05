@@ -41,7 +41,7 @@ bash Update.sh --version   # Local version, no download
 bash Update.sh --check     # Download/validate available snapshot without installing it
 ```
 
-The ordinary [Linux branch ZIP](https://github.com/skillmatic87/HL-noSteam/archive/refs/heads/linux-mint-server.zip) is a moving download. Its filename is not a unique version number. The fixed [v1.0.1-linux ZIP](https://github.com/skillmatic87/HL-noSteam/archive/refs/tags/v1.0.1-linux.zip) identifies this package version. For a specific development snapshot, use a full commit ID in place of `COMMIT`:
+The ordinary [Linux branch ZIP](https://github.com/skillmatic87/HL-noSteam/archive/refs/heads/linux-mint-server.zip) is a moving download. Its filename is not a unique version number. The fixed [1.0.1 snapshot ZIP](https://github.com/skillmatic87/HL-noSteam/archive/5052e2e9e2c305215a5291b5c975dbcf717073b6.zip) identifies the updater's first published version. For another specific development snapshot, use a full commit ID in place of `COMMIT`:
 
 ```text
 https://github.com/skillmatic87/HL-noSteam/archive/COMMIT.zip
