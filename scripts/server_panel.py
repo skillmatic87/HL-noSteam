@@ -13,6 +13,7 @@ from pathlib import Path, PurePosixPath
 import re
 import secrets
 import shlex
+import shutil
 import socket
 import subprocess
 import sys
@@ -161,6 +162,33 @@ def local_ipv4_addresses():
         return addresses
     except (OSError, subprocess.SubprocessError, ValueError, TypeError):
         fail('Could not read assigned IPv4 addresses. Check that iproute2 is installed and run ip -j -4 address show.')
+
+
+def start_linux_console(command, root, log):
+    """Keep a visible interactive console and track its child, not a D-Bus handoff."""
+    terminal = shutil.which('gnome-terminal')
+    if not terminal:
+        fail('A visible server console requires GNOME Terminal. Install it with: sudo apt install gnome-terminal.')
+    recorder = shutil.which('script')
+    env_program = shutil.which('env')
+    if not recorder or not env_program:
+        fail('The server console requires script and env. Install util-linux and coreutils.')
+    environment = os.environ.copy()
+    if not environment.get('DISPLAY') and not environment.get('WAYLAND_DISPLAY'):
+        fail('Open Start-Panel.sh from the Linux desktop to display the server console.')
+    library_path = str(root) + (':' + environment['LD_LIBRARY_PATH'] if environment.get('LD_LIBRARY_PATH') else '')
+    # A running GNOME Terminal service can have a different environment. Pass
+    # the server libraries explicitly to HLDS, never to the GTK terminal itself.
+    hlds_command = 'exec ' + shlex.join([env_program, 'LD_LIBRARY_PATH=' + library_path, *command])
+    child = [env_program, 'SHELL=/bin/sh', recorder, '-q', '-f', '-e', '-a',
+             '-c', hlds_command, str(log)]
+    arguments = [terminal, '--window', '--wait', '--title=CS 1.5 Server',
+                 '--working-directory=' + str(root), '--', *child]
+    log.parent.mkdir(exist_ok=True)
+    descriptor = os.open(log, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+    with os.fdopen(descriptor, 'ab') as output:
+        return subprocess.Popen(arguments, cwd=root, env=environment, stdin=subprocess.DEVNULL,
+                                stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
 
 
 class Panel:
@@ -584,23 +612,18 @@ class Panel:
             command = self.arguments()
             self.endpoint()  # Never start an incorrectly bound local server.
             log = self.path('_configurator/server-console.log')
-            log.parent.mkdir(exist_ok=True)
             environment = os.environ.copy()
-            if os.name != 'nt':
-                environment['LD_LIBRARY_PATH'] = str(self.root) + (':' + environment['LD_LIBRARY_PATH'] if environment.get('LD_LIBRARY_PATH') else '')
             if os.name == 'nt':
                 # Legacy Windows HLDS needs actual console input handles. A
                 # windowless process with redirected stdin exits after startup.
                 startup = subprocess.STARTUPINFO()
                 startup.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                startup.wShowWindow = subprocess.SW_HIDE
+                startup.wShowWindow = 1  # Win32 SW_SHOWNORMAL; subprocess exports only SW_HIDE.
                 self.process = subprocess.Popen(command, cwd=self.root, env=environment,
                                                 creationflags=subprocess.CREATE_NEW_CONSOLE,
                                                 startupinfo=startup)
             else:
-                with log.open('ab') as output:
-                    self.process = subprocess.Popen(command, cwd=self.root, env=environment, stdin=subprocess.DEVNULL,
-                                                    stdout=output, stderr=subprocess.STDOUT)
+                self.process = start_linux_console(command, self.root, log)
             return dict(started=True, pid=self.process.pid)
 
     def stop(self):

@@ -12,7 +12,11 @@ English is the default UI language. Choose **English** or **Deutsch** using the 
 4. Choose **Review changes**, review files and before/after values, then **Save with backup**.
 5. Use **Start server**. The panel shows startup/running/stopped state, current map and player counts. Save pending settings before starting.
 
-Closing the page does not stop HLDS. Reopening the Windows starter reuses the helper. Legacy Windows HLDS uses a separate hidden console because it needs real console input handles. Only the generated launcher arguments are supported; arbitrary shell/batch setup routines are not executed.
+Closing the page does not stop HLDS. Reopening the Windows starter reuses the helper. Clicking **Start server** always opens a separate, visible server console. On Windows it has real console input handles. On Linux, GNOME Terminal opens a new window and waits for the server's console command to end; the window accepts ordinary HLDS commands such as `status` and `quit`. Only the generated launcher arguments are supported; arbitrary shell/batch setup routines are not executed.
+
+The Linux console requires GNOME Terminal (`sudo apt install gnome-terminal` if it is missing) and a desktop session. Start the helper with `bash Start-Panel.sh` on that desktop. The panel reports missing prerequisites rather than silently starting a hidden server. Its supported terminal is GNOME Terminal even when another terminal is the desktop default. Closing the server terminal can stop HLDS; use **Stop server** or the console's `quit` command for a clean shutdown.
+
+Linux console output and the recording's completion status are appended to the installed server's `_configurator/server-console.log` using the system `script` command. The terminal itself is launched in a separate session from the helper terminal. The server library path is set inside the terminal for HLDS, so it does not affect the graphical terminal application. Keep the console log private, since it can contain commands entered there. The panel's `exitCode` describes the tracked terminal launcher; the recording contains the child command's exit status.
 
 For a specific Windows folder, run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-CS15Panel.ps1 -ServerDirectory "D:\CS15Server"`. On Linux, run `python3 scripts/server_panel.py --server /path/to/CS15Server-Linux --open-browser` on the server computer. The optional native folder chooser needs Python Tk; otherwise enter the path. Native Linux process control has not yet been accepted on Linux.
 

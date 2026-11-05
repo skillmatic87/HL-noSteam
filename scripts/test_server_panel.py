@@ -4,6 +4,7 @@ from http.server import ThreadingHTTPServer
 import json
 import os
 from pathlib import Path
+import shlex
 import socket
 import subprocess
 import tempfile
@@ -125,6 +126,71 @@ class PanelTests(unittest.TestCase):
             response = json.loads(self.request('/api/status'))
             self.assertEqual(response['endpoint'], '192.168.178.31:27015')
             self.assertFalse(response['running'])
+
+    def test_linux_console_is_visible_interactive_and_keeps_server_environment(self):
+        log = self.root / '_configurator/server-console.log'
+        command = [str(self.root / 'hlds'), '-game', 'cstrike', '+hostname',
+                   "LAN's server; $(do-not-execute) with spaces"]
+        programs = {'gnome-terminal': '/usr/bin/gnome-terminal',
+                    'script': '/usr/bin/script', 'env': '/usr/bin/env'}
+        process = Mock(pid=1234)
+        with patch.dict(module.os.environ, {'DISPLAY': ':0', 'LD_LIBRARY_PATH': '/existing-libraries'}), \
+                patch.object(module.shutil, 'which', side_effect=programs.get), \
+                patch.object(module.subprocess, 'Popen', return_value=process) as launch:
+            self.assertIs(module.start_linux_console(command, self.root, log), process)
+        arguments = launch.call_args.args[0]
+        self.assertEqual(arguments[:4], ['/usr/bin/gnome-terminal', '--window', '--wait', '--title=CS 1.5 Server'])
+        self.assertIn('--working-directory=' + str(self.root), arguments)
+        child = arguments[arguments.index('--') + 1:]
+        self.assertEqual(child[:7], ['/usr/bin/env', 'SHELL=/bin/sh', '/usr/bin/script', '-q', '-f', '-e', '-a'])
+        self.assertEqual(child[-1], str(log))
+        shell = shlex.split(child[child.index('-c') + 1])
+        self.assertEqual(shell, ['exec', '/usr/bin/env', 'LD_LIBRARY_PATH=' + str(self.root) + ':/existing-libraries', *command])
+        options = launch.call_args.kwargs
+        self.assertTrue(options['start_new_session'])
+        self.assertEqual(options['cwd'], self.root)
+        self.assertEqual(options['env']['LD_LIBRARY_PATH'], '/existing-libraries')
+        self.assertEqual(options['stdin'], subprocess.DEVNULL)  # Only the launcher; HLDS gets script's PTY.
+        self.assertTrue(log.is_file())
+
+    def test_linux_console_does_not_fall_back_to_headless_start(self):
+        variants = [({}, {'DISPLAY': ':0'}, 'gnome-terminal'),
+                    ({'gnome-terminal': '/bin/gnome-terminal'}, {'DISPLAY': ':0'}, 'util-linux'),
+                    ({'gnome-terminal': '/bin/gnome-terminal', 'script': '/bin/script', 'env': '/bin/env'}, {}, 'Linux desktop')]
+        for programs, environment, message in variants:
+            with self.subTest(message=message), patch.dict(module.os.environ, environment, clear=True), \
+                    patch.object(module.shutil, 'which', side_effect=programs.get), \
+                    patch.object(module.subprocess, 'Popen') as launch:
+                with self.assertRaisesRegex(module.PanelError, message):
+                    module.start_linux_console(['hlds', '-game', 'cstrike'], self.root,
+                                               self.root / '_configurator/server-console.log')
+                launch.assert_not_called()
+
+    def test_console_startup_process_blocks_duplicate_start_and_writes(self):
+        with patch.object(self.panel, 'probe', return_value=None):
+            process = Mock(pid=1234)
+            process.poll.return_value = None
+            self.panel.process = process
+            self.assertEqual(self.panel.status()['managed'], True)
+            for operation in (self.panel.start, lambda: self.panel.open(self.root),
+                              lambda: self.panel.fs('write', 'cstrike/server.cfg', self.panel.generation, 'YQ==')):
+                with self.assertRaises(module.PanelError):
+                    operation()
+            process.poll.return_value = 0
+            self.assertFalse(self.panel.status()['running'])
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows console dispatch')
+    def test_windows_panel_opens_visible_console_with_real_input_handles(self):
+        process = Mock(pid=1234)
+        process.poll.return_value = None
+        with patch.object(self.panel, 'probe', return_value=None), \
+                patch.object(module.subprocess, 'Popen', return_value=process) as launch:
+            self.assertEqual(self.panel.start(), {'started': True, 'pid': 1234})
+            options = launch.call_args.kwargs
+            self.assertEqual(options['creationflags'], subprocess.CREATE_NEW_CONSOLE)
+            self.assertEqual(options['startupinfo'].wShowWindow, 1)  # Win32 SW_SHOWNORMAL
+            self.assertNotIn('stdin', options)
+            self.assertNotIn('stdout', options)
 
     def access_fixture(self):
         values = {
