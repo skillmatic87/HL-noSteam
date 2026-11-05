@@ -1,3 +1,13 @@
+# v1.0.1 — Linux package updater and server fixes
+
+- `bash Update.sh` updates ZIP-extracted Linux packages without Git or reinstallation. It keeps installed game servers and private configuration intact, backs up replaced package files and restores interrupted updates on the next run.
+- `VERSION` and the last successfully applied commit ID distinguish package versions from moving branch ZIP downloads. See [update instructions](UPDATING.md) for the one-time download on older packages.
+- Linux panel validation uses assigned interface addresses, allowing Mint systems whose hostname resolves only to loopback.
+- Panel startup opens an interactive server terminal; Linux requires GNOME Terminal and util-linux `script`.
+- New Linux installations normalize the original archive's WAD filenames to lowercase to prevent the recorded `de_prodigy` map-change shutdown. Existing installations retain the separate repair steps in [Linux Mint operation](LINUX-MINT.md).
+
+Updater validation covers offline archive checks, preservation, repeat updates, injected write failures and journal recovery on Windows. Native Mint file locking, permissions and process checks still require operator verification.
+
 # v1.0.0 — local control panel and main-folder launchers
 
 Version 1.0.0 packages the Windows installer and the experimental Linux Mint installer as separate source ZIP downloads. First setup downloads and verifies the original server/mod components; it does not include a game client or a preconfigured server with shared credentials.

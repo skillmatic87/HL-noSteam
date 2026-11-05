@@ -57,6 +57,10 @@ For unattended setup, pass `--settings /path/to/settings.local.json`, using the 
 
 The AMXX Pawn plugins are compiled using the Linux compiler during installation. The generated launcher runs `hlds` directly, sets its local library search path and forwards additional command-line arguments. It does not automatically restart a crashed server or install a system service.
 
+## Update the extracted package
+
+Stop the server and the panel helper, then run `bash Update.sh` in the package folder. This updates package tools while preserving the installed server and private settings. For older ZIPs without this script, follow [the one-time updater download and version instructions](UPDATING.md). Package version: **1.0.1**; the updater also records the exact commit ID.
+
 ## Fix an older installation stopping on a map change
 
 An operator-provided console recording captured a shutdown on `de_prodigy` on 2026-11-04 at 20:41:45:
