@@ -34,6 +34,14 @@ Chromium on Windows may reject direct File System Access calls for protected ext
 
 Opening `Configure-Server.html` directly supports examples, read-only folder import and portable profiles. Saving and Start/Stop require the starter. The page requests only its own loopback helper; GitHub links navigate externally only when clicked.
 
+### Linux: helper rejects the local server address
+
+If **Helper unavailable** appears together with **Die Startdatei verweist nicht auf eine IPv4-Adresse dieses PCs.**, the helper is responding but its old address validation may be rejecting the assigned LAN IP. Mint can resolve its hostname only to `127.0.1.1`; this does not enumerate the addresses on its network interfaces.
+
+The Linux helper now reads assigned IPv4 addresses using `ip -j -4 address show`, provided by the existing `iproute2` dependency. Multiple interfaces and secondary addresses are included. Nonlocal, broadcast and multicast targets remain rejected. The panel itself still listens only on `127.0.0.1` and requires its local Host/Origin and session token. Windows keeps its existing hostname-based check for non-loopback addresses.
+
+For an existing Linux package, replace `scripts/server_panel.py` with the updated Linux-branch copy, stop the old panel helper with Ctrl+C in its terminal, then run `bash Start-Panel.sh` again. Use the newly opened local browser address and keep the helper terminal open. The installed game server, its private settings and its LAN address do not need to be replaced. If `iproute2` is unavailable or its output cannot be read, the helper reports an explicit lookup error instead of accepting an unverified address.
+
 ## Files and backups
 
 Only changed settings are written. The regular settings save preserves credentials, launcher address/port arguments and unrelated config lines. The dedicated Administration save can update `users.ini` and selected credential fields after a separate review; it preserves unrelated account rules. Ranking databases, binaries, graphs and WAV files are not written. Bot controls do not replace chat text. Rotation and nomination/vote availability are independent; existing map limits are retained. New entries use package capacity values where known.

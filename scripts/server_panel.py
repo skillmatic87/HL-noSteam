@@ -136,6 +136,33 @@ def windows_arguments(line):
         free(pointer)
 
 
+def local_ipv4_addresses():
+    """Enumerate assigned Linux addresses; a hostname may resolve only to lo."""
+    if not sys.platform.startswith('linux'):
+        return {item[4][0] for item in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET)}
+    try:
+        result = subprocess.run(['ip', '-j', '-4', 'address', 'show'],
+                                capture_output=True, text=True, check=True, timeout=3)
+        records = json.loads(result.stdout)
+        if not isinstance(records, list):
+            raise ValueError('Expected an interface list.')
+        addresses = set()
+        for record in records:
+            if not isinstance(record, dict) or not isinstance(record.get('addr_info', []), list):
+                raise ValueError('Invalid interface record.')
+            for info in record.get('addr_info', []):
+                if not isinstance(info, dict):
+                    raise ValueError('Invalid address record.')
+                if info.get('family') == 'inet':
+                    value = info.get('local')
+                    if not isinstance(value, str):
+                        raise ValueError('Missing IPv4 address.')
+                    addresses.add(str(ipaddress.IPv4Address(value)))
+        return addresses
+    except (OSError, subprocess.SubprocessError, ValueError, TypeError):
+        fail('Could not read assigned IPv4 addresses. Check that iproute2 is installed and run ip -j -4 address show.')
+
+
 class Panel:
     def __init__(self, root=None):
         self.root = None
@@ -226,8 +253,9 @@ class Panel:
             address = '127.0.0.1'
         try:
             ip = ipaddress.IPv4Address(address)
-            local = {item[4][0] for item in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET)}
-            if not ip.is_loopback and address not in local:
+            if ip.is_multicast or address == '255.255.255.255':
+                fail('Die Startdatei verweist nicht auf eine IPv4-Adresse dieses PCs.')
+            if not ip.is_loopback and address not in local_ipv4_addresses():
                 fail('Die Startdatei verweist nicht auf eine IPv4-Adresse dieses PCs.')
             port = int(value('-port', '27015'))
             if not 1 <= port <= 65535:

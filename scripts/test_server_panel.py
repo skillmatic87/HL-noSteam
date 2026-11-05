@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import socket
+import subprocess
 import tempfile
 import threading
 import unittest
@@ -56,6 +57,74 @@ class PanelTests(unittest.TestCase):
         self.assertIn('window.CS15Panel=', html)
         self.assertIn("connect-src 'self'", html)
         self.assertNotIn('await window.showDirectoryPicker', html)
+
+    def linux_interfaces(self):
+        return SimpleNamespace(stdout=json.dumps([
+            {'ifname': 'lo', 'addr_info': [{'family': 'inet', 'local': '127.0.0.1'}]},
+            {'ifname': 'enp0s31f6', 'addr_info': [
+                {'family': 'inet', 'local': '192.168.178.31'},
+                {'family': 'inet', 'local': '192.168.178.32'}]},
+            {'ifname': 'wlp2s0', 'addr_info': [{'family': 'inet', 'local': '10.0.0.7'}]}
+        ]))
+
+    def endpoint_arguments(self, address):
+        return ['hlds', '-game', 'cstrike', '-port', '27015', '+ip', address]
+
+    def test_linux_assigned_addresses_do_not_depend_on_hostname(self):
+        with patch.object(module.sys, 'platform', 'linux'), \
+                patch.object(module.subprocess, 'run', return_value=self.linux_interfaces()) as interfaces, \
+                patch.object(module.socket, 'getaddrinfo', return_value=[
+                    (socket.AF_INET, socket.SOCK_STREAM, 6, '', ('127.0.1.1', 0))]) as resolver:
+            for address in ('192.168.178.31', '192.168.178.32', '10.0.0.7'):
+                with self.subTest(address=address), patch.object(self.panel, 'arguments', return_value=self.endpoint_arguments(address)):
+                    self.assertEqual(self.panel.endpoint(), (address, 27015))
+            resolver.assert_not_called()
+            self.assertEqual(interfaces.call_args.args[0], ['ip', '-j', '-4', 'address', 'show'])
+            self.assertEqual(interfaces.call_args.kwargs['timeout'], 3)
+
+    def test_linux_remote_broadcast_and_multicast_endpoints_are_rejected(self):
+        with patch.object(module.sys, 'platform', 'linux'), \
+                patch.object(module.subprocess, 'run', return_value=self.linux_interfaces()):
+            for address in ('192.168.178.99', '192.168.178.255', '224.0.0.1', '255.255.255.255', '300.0.0.1'):
+                with self.subTest(address=address), patch.object(self.panel, 'arguments', return_value=self.endpoint_arguments(address)):
+                    with self.assertRaises(module.PanelError):
+                        self.panel.endpoint()
+
+    def test_linux_interface_lookup_failures_are_actionable_and_fail_closed(self):
+        failures = [FileNotFoundError('ip'), subprocess.TimeoutExpired('ip', 3),
+                    subprocess.CalledProcessError(1, 'ip')]
+        bad_json = ('not json', '{}', '[null]', '[{"addr_info": null}]',
+                    '[{"addr_info": [{"family": "inet"}]}]',
+                    '[{"addr_info": [{"family": "inet", "local": "not-an-ip"}]}]')
+        with patch.object(module.sys, 'platform', 'linux'), \
+                patch.object(self.panel, 'arguments', return_value=self.endpoint_arguments('192.168.178.31')):
+            for failure in failures:
+                with self.subTest(failure=type(failure).__name__), patch.object(module.subprocess, 'run', side_effect=failure):
+                    with self.assertRaisesRegex(module.PanelError, 'iproute2'):
+                        self.panel.endpoint()
+            for data in bad_json:
+                with self.subTest(data=data), patch.object(module.subprocess, 'run', return_value=SimpleNamespace(stdout=data)):
+                    with self.assertRaisesRegex(module.PanelError, 'iproute2'):
+                        self.panel.endpoint()
+
+    def test_loopback_and_wildcard_need_no_interface_or_hostname_lookup(self):
+        with patch.object(module.sys, 'platform', 'linux'), \
+                patch.object(module.subprocess, 'run') as interfaces, \
+                patch.object(module.socket, 'getaddrinfo') as resolver:
+            for address in ('127.0.0.1', '127.0.1.1', '0.0.0.0'):
+                with self.subTest(address=address), patch.object(self.panel, 'arguments', return_value=self.endpoint_arguments(address)):
+                    self.assertEqual(self.panel.endpoint(), ('127.0.0.1' if address == '0.0.0.0' else address, 27015))
+            interfaces.assert_not_called()
+            resolver.assert_not_called()
+
+    def test_linux_http_status_accepts_assigned_lan_endpoint(self):
+        with patch.object(module.sys, 'platform', 'linux'), \
+                patch.object(module.subprocess, 'run', return_value=self.linux_interfaces()), \
+                patch.object(self.panel, 'arguments', return_value=self.endpoint_arguments('192.168.178.31')), \
+                patch.object(self.panel, 'probe', return_value=None):
+            response = json.loads(self.request('/api/status'))
+            self.assertEqual(response['endpoint'], '192.168.178.31:27015')
+            self.assertFalse(response['running'])
 
     def access_fixture(self):
         values = {
