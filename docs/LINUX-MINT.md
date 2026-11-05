@@ -57,6 +57,30 @@ For unattended setup, pass `--settings /path/to/settings.local.json`, using the 
 
 The AMXX Pawn plugins are compiled using the Linux compiler during installation. The generated launcher runs `hlds` directly, sets its local library search path and forwards additional command-line arguments. It does not automatically restart a crashed server or install a system service.
 
+## Fix an older installation stopping on a map change
+
+An operator-provided console recording captured a shutdown on `de_prodigy` on 2026-11-04 at 20:41:45:
+
+```text
+FATAL ERROR (shutting down): WARNING: couldn't open valve/cstrike.wad
+COMMAND_EXIT_CODE="255"
+```
+
+The pinned CS archive supplies `cstrike.WAD`, `cs_assault.WAD`, `tswad.WAD` and `itsItaly.wad`, while the maps request lowercase WAD filenames. A Windows assembly check that only uses file-existence checks hides this mismatch. The Linux installer now normalizes root WAD filenames to lowercase without modifying their contents or any BSP files. This change applies to new installations; existing installations need the following local repair.
+
+With the server stopped, open a terminal **inside the installed `CS15Server-Linux` folder** and run:
+
+```bash
+cp -n -- cstrike/cstrike.WAD cstrike/cstrike.wad
+cp -n -- cstrike/cs_assault.WAD cstrike/cs_assault.wad
+cp -n -- cstrike/tswad.WAD cstrike/tswad.wad
+cp -n -- cstrike/itsItaly.wad cstrike/itsitaly.wad
+```
+
+These commands retain the original files and do not overwrite existing lowercase copies. If a source file is missing or a command reports an access error, inspect the exact filenames and permissions before continuing. No new WAD download or game-server reinstall is needed when these original files are intact.
+
+Start the server again and enter `changelevel de_prodigy` in its dedicated console. Verify that the map loads and the server continues responding. This Linux runtime check is still required; the automated regression checks actual directory-entry spelling and byte preservation on the development host. The captured WAD failure explains this particular termination, not every possible future shutdown.
+
 ## Verify on Mint
 
 Installation uses `ldd` to check the selected Linux binaries and compiler dependencies. This dependency check does not prove that a library loads successfully inside the old engine.

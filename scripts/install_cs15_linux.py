@@ -210,6 +210,31 @@ def single_root(path):
     return roots[0]
 
 
+def normalize_wad_names(game):
+    """Use the lowercase WAD filenames referenced by the maps on Linux.
+
+    The pinned retail archive has cstrike.WAD, cs_assault.WAD, tswad.WAD
+    and itsItaly.wad. Windows accepts their lowercase map references;
+    Linux does not. Rename files only, leaving their bytes and BSPs intact.
+    """
+    files = []
+    names = set()
+    for entry in game.iterdir():
+        if entry.suffix.lower() != '.wad':
+            continue
+        source = safe_path(game, entry.name)
+        if not source.is_file():
+            raise ValueError(f'Expected a regular WAD file: {source}')
+        canonical = source.name.lower()
+        if canonical in names:
+            raise ValueError(f'Conflicting WAD filename case: {canonical}')
+        names.add(canonical)
+        files.append((source, source.with_name(canonical)))
+    for source, target in files:
+        if source.name != target.name:
+            source.rename(target)
+
+
 def check_libraries(server, paths):
     """Check native dynamic dependencies on Linux before compilation/startup."""
     environment = os.environ.copy()
@@ -390,6 +415,7 @@ def assemble(server, cache, settings, address, compiler=None):
                'EXACT_MATCH; 1\nADMINS_ONLY; 0\nDISPLAY_KEYWORDS; 1\nFREEZE_TIME_CON; 0\n' +
                ''.join(f'{s}; sound/misc/{s}.wav\n' for s in CLASSIC_SOUNDS))
     install_content(server, cache)
+    normalize_wad_names(game)
     write_text(server / 'COMPONENTS-linux.json', json.dumps({'schemaVersion': 1, 'components': list(entries.values())}, indent=2) + '\n')
     # A direct exec preserves argument boundaries and lets Ctrl+C reach the server.
     write_text(server / 'Start-CS15.sh', '#!/usr/bin/env bash\nset -euo pipefail\n'

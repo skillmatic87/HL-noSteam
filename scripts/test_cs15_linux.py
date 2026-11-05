@@ -88,6 +88,28 @@ class InstallerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Missing or incompatible'):
                 installer.check_libraries(Path('/server'), ['hlds'])
 
+    def test_wad_names_match_case_sensitive_map_references(self):
+        with tempfile.TemporaryDirectory() as directory:
+            game = Path(directory)
+            originals = {'cstrike.WAD': b'WAD3-textures', 'cs_assault.WAD': b'WAD3-assault',
+                         'tswad.WAD': b'WAD3-oilrig', 'itsItaly.wad': b'WAD3-italy',
+                         'prodigy.wad': b'WAD3-prodigy'}
+            for name, data in originals.items():
+                (game / name).write_bytes(data)
+            bsp = game / 'de_prodigy.bsp'
+            bsp.write_bytes(b'original map bytes')
+            installer.normalize_wad_names(game)
+            # Path.exists() on Windows would hide this Linux-only regression.
+            actual_names = {entry.name for entry in game.iterdir()}
+            for name, data in originals.items():
+                self.assertIn(name.lower(), actual_names)
+                self.assertEqual((game / name.lower()).read_bytes(), data)
+                if name != name.lower():
+                    self.assertNotIn(name, actual_names)
+            self.assertEqual(bsp.read_bytes(), b'original map bytes')
+            installer.normalize_wad_names(game)
+            self.assertEqual({entry.name for entry in game.iterdir()}, actual_names)
+
 
 def integration(cache, compiler):
     """Use real, already verified archives; never start the server on Windows."""
@@ -100,6 +122,9 @@ def integration(cache, compiler):
     installer.assemble(target, cache.resolve(), settings, '192.168.1.10', compiler.resolve() if compiler else None)
     game = target / 'cstrike'
     assert len(list((game / 'maps').glob('*.bsp'))) == 39
+    wad_names = {entry.name for entry in game.iterdir() if entry.suffix.lower() == '.wad'}
+    assert all(name == name.lower() for name in wad_names)
+    assert {'cstrike.wad', 'cs_assault.wad', 'tswad.wad', 'itsitaly.wad'} <= wad_names
     assert not (target / '.install-incomplete').exists()
     assert '+maxplayers 32' in (target / 'Start-CS15.sh').read_text()
     assert 'gamedll_linux "addons/metamod/dlls/metamod.so"' in (game / 'liblist.gam').read_text()
