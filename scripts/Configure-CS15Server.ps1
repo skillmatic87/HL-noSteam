@@ -6,6 +6,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'CS15Setup.Common.ps1')
 $ServerDirectory = (Resolve-Path -LiteralPath $ServerDirectory).Path
 $game = Join-Path $ServerDirectory 'cstrike'
 if (-not (Test-Path -LiteralPath (Join-Path $game 'addons\statsme\dlls\sm_cstrike_mm.dll'))) { throw 'The CS 1.5 installation is incomplete.' }
@@ -13,23 +14,11 @@ if (Test-Path -LiteralPath (Join-Path $game 'server.cfg')) { throw 'Configuratio
 $BindAddress = & (Join-Path $PSScriptRoot 'Get-CS15LANAddress.ps1') -BindAddress $BindAddress
 
 if ($SettingsPath) {
-    $settings = Get-Content -LiteralPath $SettingsPath -Raw | ConvertFrom-Json
+    try { $settings = Get-Content -LiteralPath $SettingsPath -Raw | ConvertFrom-Json }
+    catch { throw 'The settings JSON could not be read.' }
+    if ($settings -isnot [pscustomobject]) { throw 'The settings JSON must contain an object.' }
 } else {
-    Write-Host 'Choose the server rules. No unanswered project preference is filled in automatically.'
-    Write-Host 'Ranking is stored by player name on this LAN server. Reusing a name reuses its ranking.'
-    $readInput = Join-Path $PSScriptRoot 'Read-CS15SetupInput.ps1'
-    $settings = [pscustomobject]@{
-        ServerName = & $readInput -Prompt 'Server name' -Kind ServerName
-        MapMinutes = & $readInput -Prompt 'Map time limit in minutes' -Kind Integer -Minimum 6 -Maximum 180
-        FriendlyFire = & $readInput -Prompt 'Enable Friendly Fire?' -Kind YesNo
-        BotTarget = & $readInput -Prompt 'Fill with bots up to this total player count (0 disables bots)' -Kind Integer -Maximum 32
-        BotDifficulty = & $readInput -Prompt 'Bot difficulty: 0 new, 1 easy, 2 medium, 3 hard, 4 expert' -Kind Integer -Maximum 4
-        SoundCooldown = & $readInput -Prompt 'Minimum seconds between chat sounds' -Kind Integer -Maximum 300
-        SoundQuota = & $readInput -Prompt 'Chat sound triggers per player per map' -Kind Integer -Minimum 1 -Maximum 1000
-        RankBots = & $readInput -Prompt 'Include bots in the ranking?' -Kind YesNo
-        RankScore = & $readInput -Prompt 'Ranking score' -Kind RankScore
-        AdminName = & $readInput -Prompt 'Administrator player name (exact spelling)' -Kind Name
-    }
+    $settings = & (Join-Path $PSScriptRoot 'Read-CS15SetupSettings.ps1')
 }
 
 foreach ($field in @('ServerName','AdminName')) {
@@ -45,8 +34,21 @@ foreach ($field in $ranges.Keys) {
     if ($value -notmatch '^\d+$' -or [long]$value -lt $ranges[$field][0] -or [long]$value -gt $ranges[$field][1]) { throw ('Invalid setting: ' + $field) }
 }
 if ($settings.RankScore -cnotin @('KillsMinusDeaths','Kills')) { throw 'RankScore must be KillsMinusDeaths or Kills.' }
-$adminPassword = [Guid]::NewGuid().ToString('N')
-$rconPassword = [Guid]::NewGuid().ToString('N')
+# Project imported JSON onto the public schema before any settings are saved.
+$public = [ordered]@{}
+foreach ($field in @('ServerName','MapMinutes','FriendlyFire','BotTarget','BotDifficulty','SoundCooldown','SoundQuota','RankBots','RankScore','AdminName')) {
+    $public[$field] = $settings.$field
+}
+$settings = [pscustomobject]$public
+$credentials = Get-CS15SetupCredentials -Automatic:([bool]$SettingsPath)
+foreach ($key in @('AmxPassword','YbPassword','RconPassword')) { Assert-CS15SetupPassword $credentials[$key] }
+$adminPassword = $credentials.AmxPassword
+$ybPassword = $credentials.YbPassword
+$rconPassword = $credentials.RconPassword
+$botPath = Join-Path $game 'addons\yapb\conf\yapb.cfg'
+$bots = [IO.File]::ReadAllText($botPath)
+$bots = Set-CS15LiteralCvar $bots 'yb_password' $ybPassword
+$bots = Set-CS15LiteralCvar $bots 'yb_password_key' '_ybpw'
 $settings | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $ServerDirectory 'settings.local.json') -Encoding ascii
 $serverConfig = @(
     '// Local operator configuration. Never publish this file.',
@@ -67,6 +69,9 @@ $adminConfig | Set-Content -LiteralPath (Join-Path $game 'addons\amxmodx\configs
     'Before connecting, enter this in your CS 1.5 client console:',
     ('setinfo _pw "' + $adminPassword + '"'),
     'After connecting: amxmodmenu',
+    'For YaPB bot administration, enter in your client console:',
+    ('setinfo _ybpw "' + $ybPassword + '"'),
+    'After connecting: yb menu',
     ('Server-console RCON password: ' + $rconPassword),
     'Keep this file private. Change credentials locally if it is disclosed.'
 ) | Set-Content -LiteralPath (Join-Path $ServerDirectory 'ADMIN.local.txt') -Encoding ascii
@@ -78,8 +83,6 @@ foreach ($entry in @(@('sm_menupassword','""'),@('sm_storebyauth','0'),@('sm_res
     $statsme = [regex]::Replace($statsme, ('(?m)^' + $entry[0] + '\s+.*$'), ($entry[0] + ' ' + $entry[1]))
 }
 [IO.File]::WriteAllText($statsmePath,$statsme,[Text.Encoding]::ASCII)
-$botPath = Join-Path $game 'addons\yapb\conf\yapb.cfg'
-$bots = [IO.File]::ReadAllText($botPath)
 foreach ($entry in @(@('yb_quota',[string]$settings.BotTarget),@('yb_quota_mode','fill'),@('yb_difficulty',[string]$settings.BotDifficulty))) {
     $bots = [regex]::Replace($bots, ('(?m)^' + $entry[0] + '\s+.*$'), ($entry[0] + ' "' + $entry[1] + '"'))
 }

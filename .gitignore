@@ -4,6 +4,7 @@
 !/.gitattributes
 !/.github/
 !/README.md
+!/VERSION
 !/Setup.cmd
 !/Update-Content.cmd
 !/Configure-Server.html

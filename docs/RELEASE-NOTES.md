@@ -1,3 +1,12 @@
+# v1.1.0 - English setup wizard and private password entry
+
+- Windows and Linux now share the fourteen English setup questions in [SETUP.md](SETUP.md).
+- Confirm 20-minute maps, bot fill to 16 players at medium difficulty, a 3-second chat-sound cooldown and 100 sounds per player per map, or enter custom values after answering no.
+- Yes/no answers accept y/yes/j/ja and n/no/nein. Prompts show [y/n]; empty input repeats the question. Disabling bots skips their two follow-up questions.
+- Enter and confirm separate AMX, YaPB and RCON passwords without echo. YaPB access is configured with the _ybpw key and included in the private client instructions.
+- Credentials stay out of public settings JSON and console output. Unattended ten-field JSON setup remains supported and generates three private passwords.
+- Existing server configurations and credentials are preserved; this wizard applies to new installations.
+
 # v1.0.1 ? server-name validation fix
 
 - Fixed server-name validation in Windows setup, Linux setup and the panel: names now support 1-63 printable ASCII characters, independently of the 31-character administrator/player-name limit.

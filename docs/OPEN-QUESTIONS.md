@@ -28,7 +28,7 @@ Unanswered questions remain open. Proposed values are not treated as approved re
 - Administrator identities and permissions. Do not post passwords in the public repository or chat.
 - Minimum supported Windows version and optional automatic startup.
 
-A proposal has been submitted but is not yet approved: 30-minute maps, Friendly Fire off, bots filling to 16 total players at medium difficulty, while retaining 32 server slots.
+The approved setup flow proposes 20-minute maps and confirms the other suggested values explicitly. Friendly Fire, bots, ranking and custom numeric values remain operator choices; see [setup questions](SETUP.md).
 
 ## Questions to resolve through inspection and testing
 
