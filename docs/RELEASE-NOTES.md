@@ -1,5 +1,8 @@
 # v1.0.1 — Linux package updater and server fixes
 
+- Fixed server-name validation in Windows setup, Linux setup and the panel: names now support 1-63 printable ASCII characters, independently of the 31-character administrator/player-name limit.
+- Overlong setup names report the actual length and the maximum. Existing server settings and credentials are not changed.
+- Tested the reported names, a complete 63-character hostname returned by native CS 1.5 HLDS, real browser validation, Windows configuration and Linux input validation.
 - `bash Update.sh` updates ZIP-extracted Linux packages without Git or reinstallation. It keeps installed game servers and private configuration intact, backs up replaced package files and restores interrupted updates on the next run.
 - `VERSION` and the last successfully applied commit ID distinguish package versions from moving branch ZIP downloads. See [update instructions](UPDATING.md) for the one-time download on older packages.
 - Linux panel validation uses assigned interface addresses, allowing Mint systems whose hostname resolves only to loopback.

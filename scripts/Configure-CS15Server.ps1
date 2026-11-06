@@ -19,7 +19,7 @@ if ($SettingsPath) {
     Write-Host 'Ranking is stored by player name on this LAN server. Reusing a name reuses its ranking.'
     $readInput = Join-Path $PSScriptRoot 'Read-CS15SetupInput.ps1'
     $settings = [pscustomobject]@{
-        ServerName = & $readInput -Prompt 'Server name' -Kind Name
+        ServerName = & $readInput -Prompt 'Server name' -Kind ServerName
         MapMinutes = & $readInput -Prompt 'Map time limit in minutes' -Kind Integer -Minimum 6 -Maximum 180
         FriendlyFire = & $readInput -Prompt 'Enable Friendly Fire?' -Kind YesNo
         BotTarget = & $readInput -Prompt 'Fill with bots up to this total player count (0 disables bots)' -Kind Integer -Maximum 32
@@ -34,7 +34,10 @@ if ($SettingsPath) {
 
 foreach ($field in @('ServerName','AdminName')) {
     $value = [string]$settings.$field
-    if ([string]::IsNullOrWhiteSpace($value) -or $value.Length -gt 31 -or $value -match '[^\x20-\x7e]|[";\\]') { throw ('Use 1-31 printable ASCII characters without quotes, semicolons or backslashes for ' + $field) }
+    $limit = if ($field -eq 'ServerName') { 63 } else { 31 }
+    if ([string]::IsNullOrWhiteSpace($value)) { throw ($field + ' cannot be empty.') }
+    if ($value.Length -gt $limit) { throw ($field + ' is ' + $value.Length + ' characters long; maximum is ' + $limit + '.') }
+    if ($value -match '[^\x20-\x7e]|[";\\]') { throw ('Use printable ASCII characters without quotes, semicolons or backslashes for ' + $field) }
 }
 $ranges = @{MapMinutes=@(6,180);FriendlyFire=@(0,1);BotTarget=@(0,32);BotDifficulty=@(0,4);SoundCooldown=@(0,300);SoundQuota=@(1,1000);RankBots=@(0,1)}
 foreach ($field in $ranges.Keys) {

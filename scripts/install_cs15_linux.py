@@ -130,8 +130,13 @@ def components():
 
 def validate_setting(name, value):
     if name in ('ServerName', 'AdminName'):
-        if not isinstance(value, str) or not value.strip() or not re.fullmatch(r'[\x20-\x7e]{1,31}', value) or any(c in value for c in '";\\'):
-            raise ValueError(f'{name}: use 1-31 printable ASCII characters without quotes, semicolons or backslashes.')
+        limit = 63 if name == 'ServerName' else 31
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f'{name}: enter a name; empty input does not select a value.')
+        if len(value) > limit:
+            raise ValueError(f'{name}: {len(value)} characters entered; maximum is {limit}. Shorten the name by {len(value) - limit} character(s).')
+        if not re.fullmatch(r'[\x20-\x7e]+', value) or any(c in value for c in '";\\'):
+            raise ValueError(f'{name}: use printable ASCII characters without quotes, semicolons or backslashes.')
         return value
     if name == 'RankScore':
         if value not in ('Kills', 'KillsMinusDeaths'):
@@ -145,7 +150,7 @@ def validate_setting(name, value):
 
 def get_settings(path):
     prompts = {
-        'ServerName': 'Server name', 'MapMinutes': 'Map duration in minutes (6-180)',
+        'ServerName': 'Server name (1-63 printable ASCII characters)', 'MapMinutes': 'Map duration in minutes (6-180)',
         'FriendlyFire': 'Enable Friendly Fire? (yes/no)',
         'BotTarget': 'Fill with bots to this total player count (0-32; 0 disables bots)',
         'BotDifficulty': 'Bot difficulty (0 new, 1 easy, 2 medium, 3 hard, 4 expert)',
@@ -153,7 +158,7 @@ def get_settings(path):
         'SoundQuota': 'Sound triggers per player per map (1-1000)',
         'RankBots': 'Include bots in the ranking? (yes/no)',
         'RankScore': 'Ranking score (Kills or KillsMinusDeaths)',
-        'AdminName': 'Administrator player name (exact spelling)'}
+        'AdminName': 'Administrator player name (1-31 characters; exact spelling)'}
     if path:
         supplied = read_json(path)
         return {key: validate_setting(key, supplied.get(key)) for key in prompts}

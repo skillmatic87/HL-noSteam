@@ -26,6 +26,19 @@ class InstallerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             installer.validate_setting('RankScore', 'unapproved')
 
+    def test_server_names_have_their_own_length_limit(self):
+        names = ('oldsk00l CS1.5 amx,sounds, statsme, vote',
+                 'oldsk00l CS1.5 sounds statsme vote',
+                 'oldschool CS15 statsme sounds vote', 's' * 63)
+        for name in names:
+            with self.subTest(name=name):
+                self.assertEqual(installer.validate_setting('ServerName', name), name)
+        with self.assertRaisesRegex(ValueError, '64 characters entered; maximum is 63'):
+            installer.validate_setting('ServerName', 's' * 64)
+        for name in ('', '   ', 'name;quit', 'name"', 'name\\path', 'name\nquit'):
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                installer.validate_setting('ServerName', name)
+
     def test_paths_cannot_escape(self):
         for value in ('../escape', '/etc/passwd', 'a/../../escape', 'C:/escape', '..\\escape', 'a\x00b'):
             with self.subTest(value=value), self.assertRaises(ValueError):
