@@ -29,7 +29,7 @@ All important entry points are in the extracted package's main folder: `Setup-Li
 
 Alternatively, download the [branch ZIP](https://github.com/skillmatic87/HL-noSteam/archive/refs/heads/linux-mint-server.zip), extract it, open a terminal in the extracted directory and run `bash Setup-Linux.sh`. Using `bash` works even when ZIP extraction did not preserve executable permissions.
 
-Setup asks for the same game rules and administrator name as Windows. It generates separate private admin and RCON credentials in `CS15Server-Linux/ADMIN.local.txt`. Yes/no answers accept `yes`/`y` and `no`/`n`. No unanswered gameplay preferences are filled in automatically.
+Setup uses the same fourteen English questions as Windows, confirming suggested values such as 20-minute maps with [y/n], or asking for custom values. Answers also accept j/ja and nein. AMX, YaPB and RCON passwords are entered privately and confirmed; their client instructions are stored in private `CS15Server-Linux/ADMIN.local.txt`. See [the full question list](SETUP.md).
 
 Downloads are SHA-256 verified and cached in `downloads/linux`. A first installation needs Internet access. The server, extracted upstream source material and notices remain in the new server directory; keep the download cache to retain the original component archives. Do not publish the configured server directory or its private credentials.
 
@@ -44,7 +44,7 @@ Change the example address to an address assigned to your Mint PC. The installer
 
 Existing destination directories are refused. If installation fails after extraction, the folder keeps `.install-incomplete` and cannot start through the generated launcher. Preserve it for diagnosis and retry with a **new destination**; verified cached downloads will be reused. Linux setup does not currently implement the Windows installer's configuration-resume or content-update/rollback commands.
 
-For unattended setup, pass `--settings /path/to/settings.local.json`, using the field names and accepted values documented in [installation and operation](INSTALL.md). The supplied JSON must contain all ten settings. Do not run setup or the server with `sudo`.
+For unattended setup, pass `--settings /path/to/settings.local.json`, using the field names and accepted values documented in [installation and operation](INSTALL.md). The supplied JSON must contain all ten public settings. This unattended mode generates three private passwords without prompting; passwords are not imported from or saved to that JSON. Do not run setup or the server with `sudo`.
 
 ## Included behavior
 
@@ -59,7 +59,7 @@ The AMXX Pawn plugins are compiled using the Linux compiler during installation.
 
 ## Update the extracted package
 
-Stop the server and the panel helper, then run `bash Update.sh` in the package folder. This updates package tools while preserving the installed server and private settings. For older ZIPs without this script, follow [the one-time updater download and version instructions](UPDATING.md). Package version: **1.0.1**; the updater also records the exact commit ID.
+Stop the server and the panel helper, then run `bash Update.sh` in the package folder. This updates package tools while preserving the installed server and private settings. For older ZIPs without this script, follow [the one-time updater download and version instructions](UPDATING.md). Package version: **1.1.0**; the updater also records the exact commit ID.
 
 ## Fix an older installation stopping on a map change
 

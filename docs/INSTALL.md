@@ -26,7 +26,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Install-CS15Server
 
 Server names support 1-63 printable ASCII characters; administrator/player names remain limited to 1-31. Overlong input reports its actual length and the applicable limit. If setup is waiting at an older name prompt, press Ctrl+C and rerun Setup.cmd from the same folder after updating these scripts; prepared server files are retained.
 
-Yes/no questions accept only `yes`/`y` or `no`/`n`, ignoring letter case and surrounding spaces. Names, numeric ranges and ranking choices have their own validation. Empty or invalid input asks the same question again without starting over.
+The English wizard displays `[y/n]` and accepts `y`/`yes`/`j`/`ja` or `n`/`no`/`nein`, ignoring case and surrounding spaces. Answer yes to confirm a proposed value, or no to enter a custom value. Map time is proposed as 20 minutes. Empty or invalid input repeats the question. See [all fourteen questions](SETUP.md).
 
 If setup is interrupted before configuration is saved, run `Setup.cmd` again. It recognizes prepared server files and resumes configuration without reinstalling them. This includes the older installer's failure after an empty configuration answer. Preparation interrupted before file installation also reuses verified downloads. Completed servers, edited operator settings and other partial installations are protected; setup refuses to overwrite them. A checksum mismatch stops setup; move the incorrect cached file aside before retrying.
 
@@ -34,7 +34,7 @@ If setup is interrupted before configuration is saved, run `Setup.cmd` again. It
 
 ## Configuration
 
-Setup asks for a server name, map duration, Friendly Fire, bot target/difficulty, sound cooldown/quota, bot ranking policy, ranking score and administrator name. It does not invent answers to the remaining project questions. Automated development tests can supply these fields with `-SettingsPath` pointing to a private JSON file; that file must not be published.
+Setup asks for the server rules and administrator name, then hidden, confirmed AMX, YaPB and RCON passwords. Disabling bots skips their count and difficulty questions. Unattended setup can still use `-SettingsPath` with the ten public choices; it generates three separate private passwords without prompting. Passwords are never included in saved public settings JSON. Existing configured servers are not reconfigured by setup.
 
 The fixed requirements are LAN mode, 32 slots, the automatic map vote five minutes before map end, nominations, all 26 original maps, administrator menus, server-local persistent ranking and chat sounds heard by living and dead players. YaPB fills the chosen target player count and reduces the bot population as humans join. Every original map has a local graph file; presence does not prove navigation quality on every map.
 
@@ -44,8 +44,8 @@ Important local files:
 
 | File under the installed directory | Purpose |
 | --- | --- |
-| `ADMIN.local.txt` | Unique generated administrator and RCON credentials, plus client instructions |
-| `settings.local.json` | Operator choices, excluding generated passwords |
+| `ADMIN.local.txt` | Private AMX, YaPB and RCON credentials, plus client instructions |
+| `settings.local.json` | Ten public operator choices, excluding passwords |
 | `cstrike/server.cfg` | Game rules and private RCON password |
 | `cstrike/addons/amxmodx/configs/users.ini` | Name/password administrator authentication |
 | `cstrike/addons/amxmodx/configs/mapmanager.cfg` | Vote behavior; lead time is five minutes |
@@ -53,7 +53,7 @@ Important local files:
 | `cstrike/addons/statsme/statsme.cfg` | Statistics and ranking behavior |
 | `cstrike/statsme.log` | Runtime ranking path reported by the tested CS-specific StatsMe build; keep it when moving the server |
 | `cstrike/addons/statsme/statsme.log` | Ranking file also supplied by the upstream package; preserve this file too when backing up an existing server |
-| `cstrike/addons/yapb/conf/yapb.cfg` | Bot fill target and difficulty |
+| `cstrike/addons/yapb/conf/yapb.cfg` | Bot settings and private YaPB password |
 
 Keep credentials private. The repository ignores these local configuration files and generated game data. Configuration can be edited locally after stopping the server; setup is not an updater and does not merge existing configuration.
 
@@ -71,9 +71,9 @@ For HLSW administration, select the server, open **Admin > Rcon Konfiguration**,
 
 ### YaPB in-game administration
 
-YaPB 4.4.957 authenticates remote bot commands separately from AMXX. The current installers leave `yb_password` empty, so the AMXX `setinfo _pw` login does not grant access to YaPB menus. See the [pinned access implementation](https://github.com/yapb/yapb/blob/4.4.957/src/control.cpp) and [official dedicated-server instructions](https://yapb.github.io/docs/en/configuring/botusage/#bot-management-on-a-dedicated-server).
+YaPB 4.4.957 authenticates remote bot commands separately from AMXX. New installations configure the separately chosen YaPB password and the `_ybpw` key. Older installations may still have an empty `yb_password`; AMXX `setinfo _pw` login alone does not grant YaPB access. See the [pinned access implementation](https://github.com/yapb/yapb/blob/4.4.957/src/control.cpp) and [official dedicated-server instructions](https://yapb.github.io/docs/en/configuring/botusage/#bot-management-on-a-dedicated-server).
 
-On the server, edit `cstrike/addons/yapb/conf/yapb.cfg` to set a unique private bot password and retain the default key:
+For a new installation, use the YaPB client command recorded in `ADMIN.local.txt`. For an older server without a bot password, edit `cstrike/addons/yapb/conf/yapb.cfg` to set a unique private password and retain the default key:
 
 ```text
 yb_password "<your-private-bot-password>"

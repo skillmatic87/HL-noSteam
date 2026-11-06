@@ -8,7 +8,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $hint = switch ($Kind) {
-    'YesNo' { 'yes/y or no/n' }
+    'YesNo' { 'y/n' }
     'Name' { '1-31 printable ASCII characters; no quotes, semicolons or backslashes' }
     'ServerName' { '1-63 printable ASCII characters; no quotes, semicolons or backslashes' }
     'Integer' { [string]$Minimum + '-' + [string]$Maximum }
@@ -34,8 +34,8 @@ while ($true) {
     if ($answer.Length -gt 0) {
         switch ($Kind) {
             'YesNo' {
-                if ($answer -iin @('yes','y')) { return 1 }
-                if ($answer -iin @('no','n')) { return 0 }
+                if ($answer -iin @('yes','y','ja','j')) { return 1 }
+                if ($answer -iin @('no','n','nein')) { return 0 }
             }
             'Integer' {
                 $number = 0

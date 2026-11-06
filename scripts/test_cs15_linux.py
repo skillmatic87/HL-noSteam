@@ -134,6 +134,17 @@ def integration(cache, compiler):
     # Test credentials are generated locally and excluded from Git.
     installer.assemble(target, cache.resolve(), settings, '192.168.1.10', compiler.resolve() if compiler else None)
     game = target / 'cstrike'
+    saved_settings = installer.read_json(target / 'settings.local.json')
+    assert set(saved_settings) == set(installer.PUBLIC_FIELDS)
+    import re
+    admin = re.search(r'^"[^"]+" "([^"]+)"', (game / 'addons/amxmodx/configs/users.ini').read_text())[1]
+    rcon = re.search(r'(?m)^rcon_password "([^"]+)"', (game / 'server.cfg').read_text())[1]
+    bot = re.search(r'(?m)^yb_password "([^"]+)"', (game / 'addons/yapb/conf/yapb.cfg').read_text())[1]
+    for value in (admin, rcon, bot):
+        installer.validate_password(value)
+        assert value not in (target / 'settings.local.json').read_text()
+    assert len({admin, rcon, bot}) == 3
+    assert f'setinfo _ybpw "{bot}"' in (target / 'ADMIN.local.txt').read_text()
     assert len(list((game / 'maps').glob('*.bsp'))) == 39
     wad_names = {entry.name for entry in game.iterdir() if entry.suffix.lower() == '.wad'}
     assert all(name == name.lower() for name in wad_names)

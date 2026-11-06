@@ -3,7 +3,7 @@ COUNTER-STRIKE 1.5 LAN SERVER
 Keep this extracted folder together. Start here:
 
 WINDOWS
-  1. Setup.cmd          Install and configure the server.
+  1. Setup.cmd          Install and configure the server (English yes/no wizard).
   2. Start-Server.cmd   Start the server in its console.
      Start-Panel.cmd    Open the English/German control panel instead.
                        Requires Python 3.10 or newer.
@@ -33,3 +33,7 @@ server's ADMIN.local.txt. Never publish that file or your configured server.
 
 Full instructions and verification status: README.md, docs/.
 https://github.com/skillmatic87/HL-noSteam
+
+Setup v1.1.0: confirm 20-minute maps and other proposed values with y/n,
+or enter custom values. Password questions for AMX, YaPB and RCON use
+hidden, confirmed input. Full question list: docs/SETUP.md.

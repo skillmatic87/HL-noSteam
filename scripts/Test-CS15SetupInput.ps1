@@ -7,6 +7,9 @@ $cases = @(
     @{Name='Only explicit yes/no tokens';Kind='YesNo';Input=@('1','true','I ACCEPT',' YES ');Expected=1},
     @{Name='Short no';Kind='YesNo';Input=@('N');Expected=0},
     @{Name='Full no';Kind='YesNo';Input=@('no');Expected=0},
+    @{Name='German short yes';Kind='YesNo';Input=@(' J ');Expected=1},
+    @{Name='German full yes';Kind='YesNo';Input=@('JA');Expected=1},
+    @{Name='German full no';Kind='YesNo';Input=@('Nein');Expected=0},
     @{Name='Empty name repeats';Kind='Name';Input=@('','LAN server');Expected='LAN server'},
     @{Name='Unsafe name repeats';Kind='Name';Input=@('name;command','Admin');Expected='Admin'},
     @{Name='Reported server name with punctuation';Kind='ServerName';Input=@('oldsk00l CS1.5 amx,sounds, statsme, vote');Expected='oldsk00l CS1.5 amx,sounds, statsme, vote'},
@@ -62,11 +65,13 @@ if ($IntegrationCacheDirectory) {
     Copy-Item -LiteralPath (Join-Path $fixture '_setup\amxx\addons\amxmodx\configs\users.ini') -Destination $userFile -Force
     $extractionsBefore = @(Get-ChildItem -LiteralPath (Join-Path $fixture '_setup') -Directory -Filter 'server-*').Count
     $responses = New-Object Collections.Queue
-    foreach ($answer in @('','Interactive regression','oops','6','','maybe','n','2','2','5','20','y','KillsMinusDeaths','','TestAdmin')) { $responses.Enqueue($answer) }
+    foreach ($answer in @('','Interactive regression','oops','n','6','','maybe','n','y','n','2','y','n','5','n','20','y','y','','TestAdmin','amx-fixture','amx-fixture','yb-fixture','yb-fixture','rcon-fixture','rcon-fixture')) { $responses.Enqueue($answer) }
     $readResponse = {
-        param([string]$Prompt)
+        param([string]$Prompt,[switch]$AsSecureString)
         if ($responses.Count -eq 0) { throw 'Unexpected setup prompt.' }
-        $responses.Dequeue()
+        $value = $responses.Dequeue()
+        if ($AsSecureString) { return ConvertTo-SecureString -String $value -AsPlainText -Force }
+        return $value
     }.GetNewClosure()
     Set-Item -Path Function:Read-Host -Value $readResponse
     & (Join-Path $PSScriptRoot 'Install-CS15Server.ps1') -Destination $fixture -CacheDirectory $IntegrationCacheDirectory

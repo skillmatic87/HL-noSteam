@@ -4,7 +4,7 @@ A downloadable **Counter-Strike 1.5 dedicated server package for Windows LAN gam
 
 **Linux Mint:** this branch also includes the native Linux installer and launchers. See [Linux Mint setup and verification](docs/LINUX-MINT.md). Install the documented 32-bit dependencies, then run `bash Setup-Linux.sh`. Initial startup, client connection and administrator access have been reported working; further acceptance checks remain open.
 
-**Version 1.0.1.** A fresh installation starts with 32 slots, StatsMe, bots, the admin plugins, Map Manager and Sank Sounds. Startup, administrator access, map changes/votes, sounds, custom-map downloads and bot play have been reported working. Ranking persistence, simultaneous sounds with two human clients and a 32-client load test remain open. See [test results](docs/TESTING.md).
+**Version 1.1.0.** A fresh installation starts with 32 slots, StatsMe, bots, the admin plugins, Map Manager and Sank Sounds. Startup, administrator access, map changes/votes, sounds, custom-map downloads and bot play have been reported working. Ranking persistence, simultaneous sounds with two human clients and a 32-client load test remain open. See [test results](docs/TESTING.md).
 
 ## Start here
 
@@ -26,7 +26,7 @@ For an existing Linux ZIP package, stop the server/panel helper and run `bash Up
 
 1. [Download the repository ZIP](https://github.com/skillmatic87/HL-noSteam/archive/refs/heads/main.zip) and extract it into a writable folder.
 2. Run `Setup.cmd`. The first setup downloads about 300 MB of original components and verifies every file against its SHA-256 checksum.
-3. Enter your game rules and administrator player name. Yes/no questions accept `yes`/`y` or `no`/`n`; empty or invalid answers ask again. The original server license is included as a file, without an interactive license prompt.
+3. Confirm the suggested rules with `y`/`n` (also accepting `j`/`n`), or enter custom values. The map-time suggestion is 20 minutes. Enter your administrator name and three separate passwords for AMX, YaPB and RCON; password entry is hidden and confirmed. See [all setup questions](docs/SETUP.md). The original server license is included as a file, without an interactive license prompt.
 4. Open `CS15Server/ADMIN.local.txt` for your unique administrator credentials.
 5. Run `Start-Server.cmd` from the main folder, or open `Start-Panel.cmd` and use **Start server**. Connect using a compatible CS 1.5 client on the LAN.
 

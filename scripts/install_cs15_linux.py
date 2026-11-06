@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Assemble a new native CS 1.5 LAN server from checksum-pinned archives."""
 import argparse
+import getpass
 import hashlib
 import ipaddress
 import json
@@ -16,12 +17,16 @@ import subprocess
 import sys
 import tarfile
 import urllib.request
+import warnings
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 RANGES = {'MapMinutes': (6, 180), 'FriendlyFire': (0, 1), 'BotTarget': (0, 32),
           'BotDifficulty': (0, 4), 'SoundCooldown': (0, 300),
           'SoundQuota': (1, 1000), 'RankBots': (0, 1)}
+PUBLIC_FIELDS = ('ServerName', 'MapMinutes', 'FriendlyFire', 'BotTarget', 'BotDifficulty',
+                 'SoundCooldown', 'SoundQuota', 'RankBots', 'RankScore', 'AdminName')
+CREDENTIAL_FIELDS = ('AmxPassword', 'YbPassword', 'RconPassword')
 CLASSIC_SOUNDS = ('dominating doublekill firstblood godlike headshot humiliation '
                   'killingspree monsterkill multikill perfect prepare rampage '
                   'ultrakill unstoppable').split()
@@ -148,36 +153,134 @@ def validate_setting(name, value):
     return int(value)
 
 
+def public_settings(settings):
+    if not isinstance(settings, dict):
+        raise ValueError('The settings JSON must contain an object.')
+    return {name: validate_setting(name, settings.get(name)) for name in PUBLIC_FIELDS}
+
+
+def ask_yes_no(prompt):
+    answers = {'yes': 1, 'y': 1, 'ja': 1, 'j': 1, 'no': 0, 'n': 0, 'nein': 0}
+    while True:
+        answer = input(prompt + ' [y/n]: ').strip().lower()
+        if answer in answers:
+            return answers[answer]
+        print('Please answer y or n. Empty input does not select a value.')
+
+
+def ask_value(name, prompt):
+    while True:
+        try:
+            return validate_setting(name, input(prompt + ': ').strip())
+        except ValueError as error:
+            print(error)
+
+
+def confirmed_number(name, question, suggested, custom_prompt, minimum=None):
+    if ask_yes_no(question):
+        return suggested
+    while True:
+        value = ask_value(name, custom_prompt)
+        if minimum is None or value >= minimum:
+            return value
+        print(f'Enter an integer from {minimum} to {RANGES[name][1]}.')
+
+
 def get_settings(path):
-    prompts = {
-        'ServerName': 'Server name (1-63 printable ASCII characters)', 'MapMinutes': 'Map duration in minutes (6-180)',
-        'FriendlyFire': 'Enable Friendly Fire? (yes/no)',
-        'BotTarget': 'Fill with bots to this total player count (0-32; 0 disables bots)',
-        'BotDifficulty': 'Bot difficulty (0 new, 1 easy, 2 medium, 3 hard, 4 expert)',
-        'SoundCooldown': 'Seconds between chat sounds (0-300)',
-        'SoundQuota': 'Sound triggers per player per map (1-1000)',
-        'RankBots': 'Include bots in the ranking? (yes/no)',
-        'RankScore': 'Ranking score (Kills or KillsMinusDeaths)',
-        'AdminName': 'Administrator player name (1-31 characters; exact spelling)'}
     if path:
-        supplied = read_json(path)
-        return {key: validate_setting(key, supplied.get(key)) for key in prompts}
+        try:
+            supplied = read_json(path)
+        except (ValueError, UnicodeError):
+            raise ValueError('The settings JSON could not be read.') from None
+        return public_settings(supplied)
+    print('Answer y or n. Names and custom values are entered when requested.')
     print('Ranking is stored by player name. Reusing a name reuses its ranking.')
     result = {}
-    for name, prompt in prompts.items():
-        while True:
-            value = input(prompt + ': ').strip()
-            try:
-                if name in ('FriendlyFire', 'RankBots'):
-                    answers = {'yes': 1, 'y': 1, 'no': 0, 'n': 0}
-                    if value.lower() not in answers:
-                        raise ValueError('Please answer yes/y or no/n.')
-                    value = answers[value.lower()]
-                result[name] = validate_setting(name, value)
-                break
-            except ValueError as error:
-                print(error)
-    return result
+    result['ServerName'] = ask_value('ServerName', '1. Server name (1-63 printable ASCII characters)')
+    result['MapMinutes'] = confirmed_number('MapMinutes', '2. Use a 20-minute map time limit?', 20, 'Map time limit in minutes (6-180)')
+    result['FriendlyFire'] = ask_yes_no('3. Enable friendly fire?')
+    result.update(BotTarget=0, BotDifficulty=2)
+    if ask_yes_no('4. Enable bots?'):
+        result['BotTarget'] = confirmed_number('BotTarget', '5. Use bots to fill the server up to 16 players?', 16, 'Total players to fill with bots (1-32)', 1)
+        result['BotDifficulty'] = confirmed_number('BotDifficulty', '6. Use medium bot difficulty?', 2, 'Bot difficulty: 0 novice, 1 easy, 2 medium, 3 hard, 4 expert')
+    result['SoundCooldown'] = confirmed_number('SoundCooldown', '7. Use a 3-second cooldown between chat sounds?', 3, 'Seconds between chat sounds (0-300)')
+    result['SoundQuota'] = confirmed_number('SoundQuota', '8. Limit each player to 100 chat sounds per map?', 100, 'Chat sounds per player per map (1-1000)')
+    result['RankBots'] = ask_yes_no('9. Include bots in the ranking?')
+    result['RankScore'] = 'KillsMinusDeaths' if ask_yes_no('10. Rank players by kills minus deaths?') else 'Kills'
+    result['AdminName'] = ask_value('AdminName', '11. Administrator player name (1-31 characters; exact spelling)')
+    return public_settings(result)
+
+
+def validate_password(value):
+    if not isinstance(value, str) or not re.fullmatch(r'[\x21-\x7e]{1,31}', value) or any(c in value for c in '";\\'):
+        raise ValueError('Passwords must use 1-31 printable ASCII characters without spaces, quotes, semicolons or backslashes.')
+    return value
+
+
+def private_input(prompt):
+    with warnings.catch_warnings():
+        warnings.simplefilter('error', getpass.GetPassWarning)
+        try:
+            return getpass.getpass(prompt + ': ')
+        except (getpass.GetPassWarning, EOFError):
+            raise ValueError('A private terminal is required for password entry. Run setup in a terminal.') from None
+
+
+def read_password(prompt):
+    while True:
+        value = private_input(prompt)
+        try:
+            validate_password(value)
+        except ValueError as error:
+            print(error)
+            continue
+        if private_input('Confirm password') != value:
+            print('Passwords do not match. Please enter the password again.')
+            continue
+        return value
+
+
+def read_credentials():
+    return {name: read_password(prompt) for name, prompt in zip(CREDENTIAL_FIELDS,
+            ('12. AMX password', '13. YaPB password', '14. RCON password'))}
+
+
+def validate_credentials(credentials):
+    if credentials is None:
+        return {name: secrets.token_hex(15) for name in CREDENTIAL_FIELDS}
+    if not isinstance(credentials, dict) or set(credentials) != set(CREDENTIAL_FIELDS):
+        raise ValueError('Provide all three setup credentials separately from public settings.')
+    return {name: validate_password(credentials[name]) for name in CREDENTIAL_FIELDS}
+
+
+def patch_access_cvar(text, name, value):
+    pattern = r'(?m)^([ \t]*' + re.escape(name) + r'[ \t]+)(?:"[^"\r\n]*"|[^\s;]+)([^\r\n]*)'
+    if len(re.findall(pattern, text)) > 1:
+        raise ValueError('Multiple active settings found for ' + name + '.')
+    if re.search(pattern, text):
+        return re.sub(pattern, lambda match: match[1] + '"' + value + '"' + match[2], text)
+    return text + ('\n' if text and not text.endswith('\n') else '') + name + ' "' + value + '"\n'
+
+
+def write_access_settings(server, settings, credentials):
+    settings = public_settings(settings)
+    credentials = validate_credentials(credentials)
+    bots = server / 'cstrike/addons/yapb/conf/yapb.cfg'
+    text = bots.read_text(encoding='latin1')
+    text = patch_access_cvar(text, 'yb_password', credentials['YbPassword'])
+    text = patch_access_cvar(text, 'yb_password_key', '_ybpw')
+    write_text(server / 'settings.local.json', json.dumps(settings, indent=2) + '\n')
+    write_text(server / 'cstrike/server.cfg', f'hostname "{settings["ServerName"]}"\nsv_lan 1\nsv_allowdownload 1\n'
+               f'rcon_password "{credentials["RconPassword"]}"\nmp_timelimit {settings["MapMinutes"]}\n'
+               f'mp_friendlyfire {settings["FriendlyFire"]}\nmp_maxrounds 0\nmp_winlimit 0\nlog on\n')
+    write_text(server / 'cstrike/addons/amxmodx/configs/users.ini',
+               f'"{settings["AdminName"]}" "{credentials["AmxPassword"]}" "abcdefghijklmnopqrstu" "a"\n')
+    write_text(server / 'ADMIN.local.txt', 'Private administrator instructions. Do not publish.\n'
+               f'Player name: {settings["AdminName"]}\nBefore connecting, enter in your client console:\n'
+               f'setinfo _pw "{credentials["AmxPassword"]}"\nAfter connecting: amxmodmenu\n'
+               f'For YaPB bot administration: setinfo _ybpw "{credentials["YbPassword"]}"\nAfter connecting: yb menu\n'
+               f'RCON password: {credentials["RconPassword"]}\n')
+    write_text(bots, text)
 
 
 def lan_address(value):
@@ -344,7 +447,11 @@ def install_content(server, cache):
     write_text(server / '_content/installed.json', json.dumps({'schemaVersion': 1, 'id': manifest['id'], 'files': managed}, indent=2) + '\n')
 
 
-def assemble(server, cache, settings, address, compiler=None):
+def assemble(server, cache, settings, address, compiler=None, credentials=None):
+    if server.exists() or server.is_symlink():
+        raise FileExistsError('Destination already exists; existing servers are never overwritten.')
+    settings = public_settings(settings)
+    credentials = validate_credentials(credentials)
     entries = components()
     archives = {key: download(entry, cache) for key, entry in entries.items()}
     # Existence is checked again atomically, after downloads, before any server writes.
@@ -400,15 +507,7 @@ def assemble(server, cache, settings, address, compiler=None):
             raise ValueError(f'Bot navigation missing: {name}')
     for path in (game / 'mapcycle.txt', amxx / 'configs/maps.ini'):
         write_text(path, '\n'.join(maps) + '\n')
-    admin_password, rcon_password = secrets.token_hex(16), secrets.token_hex(16)
-    write_text(server / 'settings.local.json', json.dumps(settings, indent=2) + '\n')
-    write_text(game / 'server.cfg', f'hostname "{settings["ServerName"]}"\nsv_lan 1\nsv_allowdownload 1\n'
-               f'rcon_password "{rcon_password}"\nmp_timelimit {settings["MapMinutes"]}\n'
-               f'mp_friendlyfire {settings["FriendlyFire"]}\nmp_maxrounds 0\nmp_winlimit 0\nlog on\n')
-    write_text(amxx / 'configs/users.ini', f'"{settings["AdminName"]}" "{admin_password}" "abcdefghijklmnopqrstu" "a"\n')
-    write_text(server / 'ADMIN.local.txt', f'Private administrator instructions. Do not publish.\n'
-               f'Player name: {settings["AdminName"]}\nBefore connecting, enter in your client console:\n'
-               f'setinfo _pw "{admin_password}"\nAfter connecting: amxmodmenu\nRCON password: {rcon_password}\n')
+    write_access_settings(server, settings, credentials)
     score = '{rk.kills}' if settings['RankScore'] == 'Kills' else '{{rk.kills}-{rk.deaths}}'
     replace_cvars(game / 'addons/statsme/statsme.cfg', {'sm_menupassword': '""', 'sm_storebyauth': '0',
                   'sm_resetrank': '0', 'sm_rankbots': str(settings['RankBots']), 'sm_rankscore': '"' + score + '"'})
@@ -453,7 +552,8 @@ def main():
         parser.error('Destination already exists. Choose a new directory; existing servers are never overwritten.')
     address = lan_address(args.bind_address)
     settings = get_settings(args.settings)
-    assemble(destination, args.cache_directory.expanduser().absolute(), settings, address)
+    credentials = None if args.settings else read_credentials()
+    assemble(destination, args.cache_directory.expanduser().absolute(), settings, address, credentials=credentials)
     print(f'Installed: {destination}\nStart: bash "{destination / "Start-CS15.sh"}"\n'
           f'Connect: {address}:27015\nPrivate credentials: {destination / "ADMIN.local.txt"}\n'
           'Mint runtime and human-client acceptance checks are still required; see docs/LINUX-MINT.md.')
