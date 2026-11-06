@@ -1,3 +1,9 @@
+# v1.0.1 ? server-name validation fix
+
+- Fixed server-name validation in Windows setup, Linux setup and the panel: names now support 1-63 printable ASCII characters, independently of the 31-character administrator/player-name limit.
+- Overlong setup names report the actual length and the maximum. Existing server settings and credentials are not changed.
+- Tested the reported names, a complete 63-character hostname returned by native CS 1.5 HLDS, real browser validation, Windows configuration and Linux input validation.
+
 # v1.0.0 — local control panel and main-folder launchers
 
 Version 1.0.0 packages the Windows installer and the experimental Linux Mint installer as separate source ZIP downloads. First setup downloads and verifies the original server/mod components; it does not include a game client or a preconfigured server with shared credentials.

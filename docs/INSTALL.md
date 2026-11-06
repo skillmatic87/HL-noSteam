@@ -24,6 +24,8 @@ To choose a different destination or an existing verified cache:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Install-CS15Server.ps1 -Destination D:\CS15Server -CacheDirectory D:\CS15Downloads
 ```
 
+Server names support 1-63 printable ASCII characters; administrator/player names remain limited to 1-31. Overlong input reports its actual length and the applicable limit. If setup is waiting at an older name prompt, press Ctrl+C and rerun Setup.cmd from the same folder after updating these scripts; prepared server files are retained.
+
 Yes/no questions accept only `yes`/`y` or `no`/`n`, ignoring letter case and surrounding spaces. Names, numeric ranges and ranking choices have their own validation. Empty or invalid input asks the same question again without starting over.
 
 If setup is interrupted before configuration is saved, run `Setup.cmd` again. It recognizes prepared server files and resumes configuration without reinstalling them. This includes the older installer's failure after an empty configuration answer. Preparation interrupted before file installation also reuses verified downloads. Completed servers, edited operator settings and other partial installations are protected; setup refuses to overwrite them. A checksum mismatch stops setup; move the incorrect cached file aside before retrying.

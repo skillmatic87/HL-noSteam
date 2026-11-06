@@ -4,7 +4,7 @@ A downloadable **Counter-Strike 1.5 dedicated server package for Windows LAN gam
 
 **Linux Mint:** the experimental installer is maintained in the [linux-mint-server branch](https://github.com/skillmatic87/HL-noSteam/tree/linux-mint-server). See its [setup and verification guide](https://github.com/skillmatic87/HL-noSteam/blob/linux-mint-server/docs/LINUX-MINT.md).
 
-**Version 1.0.0.** A fresh installation starts with 32 slots, StatsMe, bots, the admin plugins, Map Manager and Sank Sounds. Startup, administrator access, map changes/votes, sounds, custom-map downloads and bot play have been reported working. Ranking persistence, simultaneous sounds with two human clients and a 32-client load test remain open. See [test results](docs/TESTING.md).
+**Version 1.0.1.** A fresh installation starts with 32 slots, StatsMe, bots, the admin plugins, Map Manager and Sank Sounds. Startup, administrator access, map changes/votes, sounds, custom-map downloads and bot play have been reported working. Ranking persistence, simultaneous sounds with two human clients and a 32-client load test remain open. See [test results](docs/TESTING.md).
 
 ## Start here
 
