@@ -142,10 +142,9 @@ class PanelTests(unittest.TestCase):
         self.assertEqual(arguments[:4], ['/usr/bin/gnome-terminal', '--window', '--wait', '--title=CS 1.5 Server'])
         self.assertIn('--working-directory=' + str(self.root), arguments)
         child = arguments[arguments.index('--') + 1:]
-        self.assertEqual(child[:7], ['/usr/bin/env', 'SHELL=/bin/sh', '/usr/bin/script', '-q', '-f', '-e', '-a'])
-        self.assertEqual(child[-1], str(log))
-        shell = shlex.split(child[child.index('-c') + 1])
-        self.assertEqual(shell, ['exec', '/usr/bin/env', 'LD_LIBRARY_PATH=' + str(self.root) + ':/existing-libraries', *command])
+        self.assertEqual(child[:2], [module.sys.executable, str(module.PROJECT / 'scripts/run_logged_server.py')])
+        self.assertEqual(child[child.index('--log-file') + 1], str(log))
+        self.assertEqual(child[child.index('--') + 1:], command)
         options = launch.call_args.kwargs
         self.assertTrue(options['start_new_session'])
         self.assertEqual(options['cwd'], self.root)

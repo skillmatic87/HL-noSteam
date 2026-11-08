@@ -19,6 +19,7 @@ import tarfile
 import urllib.request
 import warnings
 import zipfile
+from run_logged_server import recording_preamble
 
 ROOT = Path(__file__).resolve().parents[1]
 RANGES = {'MapMinutes': (6, 180), 'FriendlyFire': (0, 1), 'BotTarget': (0, 32),
@@ -354,7 +355,7 @@ def check_libraries(server, paths):
         if run.returncode or 'not found' in run.stdout + run.stderr:
             failures.append(f'{relative}:\n{run.stdout}{run.stderr}')
     if failures:
-        raise ValueError('Missing or incompatible 32-bit Linux libraries. See docs/LINUX-MINT.md.\n' + '\n'.join(failures))
+        raise ValueError('Missing or incompatible 32-bit Linux libraries. See docs/linux-mint.md.\n' + '\n'.join(failures))
 
 
 def compile_plugins(server, compiler=None):
@@ -521,11 +522,13 @@ def assemble(server, cache, settings, address, compiler=None, credentials=None):
     install_content(server, cache)
     normalize_wad_names(game)
     write_text(server / 'COMPONENTS-linux.json', json.dumps({'schemaVersion': 1, 'components': list(entries.values())}, indent=2) + '\n')
-    # A direct exec preserves argument boundaries and lets Ctrl+C reach the server.
+    # Keep the HLDS line parseable; the shared recorder prevents nested sessions.
+    write_text(server / 'run_logged_server.py', (ROOT / 'scripts/run_logged_server.py').read_text(encoding='utf-8'), 0o700)
     write_text(server / 'Start-CS15.sh', '#!/usr/bin/env bash\nset -euo pipefail\n'
                'cd -- "$(dirname -- "${BASH_SOURCE[0]}")"\n'
                'if [[ -e .install-incomplete ]]; then echo "Installation is incomplete." >&2; exit 1; fi\n'
                'if (( EUID == 0 )); then echo "Run the server as a regular user." >&2; exit 1; fi\n'
+               + recording_preamble() +
                'export LD_LIBRARY_PATH="$PWD${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
                f'exec ./hlds -game cstrike -nomaster -insecure -noipx -port 27015 +ip {address} '
                '+sv_lan 1 +maxplayers 32 +map de_dust2 "$@"\n', 0o700)
@@ -545,7 +548,7 @@ def main():
     if os.geteuid() == 0:
         parser.error('Run setup as a regular user, without sudo.')
     if not Path('/lib/ld-linux.so.2').exists() or not shutil.which('ldd'):
-        parser.error('32-bit Linux support is missing. Follow the dependency commands in docs/LINUX-MINT.md first.')
+        parser.error('32-bit Linux support is missing. Follow the dependency commands in docs/linux-mint.md first.')
     os.umask(0o077)
     destination = args.destination.expanduser().absolute()
     if destination.exists() or destination.is_symlink():
@@ -556,7 +559,7 @@ def main():
     assemble(destination, args.cache_directory.expanduser().absolute(), settings, address, credentials=credentials)
     print(f'Installed: {destination}\nStart: bash "{destination / "Start-CS15.sh"}"\n'
           f'Connect: {address}:27015\nPrivate credentials: {destination / "ADMIN.local.txt"}\n'
-          'Mint runtime and human-client acceptance checks are still required; see docs/LINUX-MINT.md.')
+          'Mint runtime and human-client acceptance checks are still required; see docs/linux-mint.md.')
 
 
 if __name__ == '__main__':

@@ -11,15 +11,15 @@ from unittest.mock import patch
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / 'Update.sh').read_text(encoding='utf-8').split("<<'CS15_UPDATE_PYTHON'\n", 1)[1].rsplit('\nCS15_UPDATE_PYTHON', 1)[0]
+SOURCE = (ROOT / 'update.sh').read_text(encoding='utf-8').split("<<'CS15_UPDATE_PYTHON'\n", 1)[1].rsplit('\nCS15_UPDATE_PYTHON', 1)[0]
 updater = types.ModuleType('package_updater')
-exec(compile(SOURCE, 'Update.sh (embedded Python)', 'exec'), updater.__dict__)
+exec(compile(SOURCE, 'update.sh (embedded Python)', 'exec'), updater.__dict__)
 COMMIT = 'a' * 40
 
 
 def snapshot(extra=None):
     files = {name: b'package data\n' for name in updater.REQUIRED}
-    files['VERSION'] = b'1.0.1\n'
+    files['version'] = b'1.0.1\n'
     files.update(extra or {})
     return files
 
@@ -92,7 +92,7 @@ class PackageUpdates(unittest.TestCase):
         with self.assertRaises(ValueError):
             updater.read_snapshot(archive(snapshot({member: b'/elsewhere'})), COMMIT)
         with self.assertRaises(ValueError):
-            updater.read_snapshot(archive(snapshot({'version': b'duplicate'})), COMMIT)
+            updater.read_snapshot(archive(snapshot({'VERSION': b'duplicate'})), COMMIT)
 
     def test_archive_file_directory_conflicts_are_rejected_in_either_order(self):
         for extra in ({'docs': b'file', 'docs/update.md': b'child'},
@@ -103,9 +103,9 @@ class PackageUpdates(unittest.TestCase):
 
     def test_incomplete_invalid_version_and_oversized_packages_are_rejected(self):
         with self.assertRaises(ValueError):
-            updater.read_snapshot(archive({'VERSION': b'1.0.1\n'}), COMMIT)
+            updater.read_snapshot(archive({'version': b'1.0.1\n'}), COMMIT)
         with self.assertRaises(ValueError):
-            updater.read_snapshot(archive(snapshot({'VERSION': b'latest'})), COMMIT)
+            updater.read_snapshot(archive(snapshot({'version': b'latest'})), COMMIT)
         with patch.object(updater, 'MAX_UNPACKED', 10), self.assertRaises(ValueError):
             updater.read_snapshot(archive(snapshot()), COMMIT)
 
@@ -125,7 +125,7 @@ class PackageUpdates(unittest.TestCase):
         with self.assertRaises(ValueError):
             updater.apply_snapshot(self.root, snapshot(), '1.0.1', COMMIT)
         self.assertEqual(list(external.iterdir()), [])
-        self.assertFalse((self.root / 'VERSION').exists())
+        self.assertFalse((self.root / 'version').exists())
 
     def test_link_guard_on_hosts_without_symlink_permission(self):
         with patch.object(Path, 'is_symlink', lambda path: path == self.root / 'scripts'):
@@ -134,19 +134,19 @@ class PackageUpdates(unittest.TestCase):
         self.assertEqual(list(self.root.iterdir()), [])
 
     def test_write_failure_restores_old_files_and_removes_new_files(self):
-        old = {'README.md': b'old readme', 'VERSION': b'1.0.0\n'}
+        old = {'readme.md': b'old readme', 'version': b'1.0.0\n'}
         for name, data in old.items():
             (self.root / name).write_bytes(data)
         real = updater.atomic_write
         failed = False
         def fail_once(path, data, mode):
             nonlocal failed
-            if path.name == 'VERSION' and not failed:
+            if path.name == 'version' and not failed:
                 failed = True
                 raise OSError('simulated disk error')
             return real(path, data, mode)
         with patch.object(updater, 'atomic_write', side_effect=fail_once), self.assertRaises(OSError):
-            updater.apply_snapshot(self.root, {'README.md': b'new', 'scripts/new.py': b'new', 'VERSION': b'1.0.1\n'}, '1.0.1', COMMIT)
+            updater.apply_snapshot(self.root, {'readme.md': b'new', 'scripts/new.py': b'new', 'version': b'1.0.1\n'}, '1.0.1', COMMIT)
         for name, data in old.items():
             self.assertEqual((self.root / name).read_bytes(), data)
         self.assertFalse((self.root / 'scripts/new.py').exists())
@@ -154,21 +154,21 @@ class PackageUpdates(unittest.TestCase):
         self.assertFalse((self.root / updater.JOURNAL).exists())
 
     def test_next_run_restores_an_interrupted_transaction(self):
-        (self.root / 'README.md').write_bytes(b'old readme')
+        (self.root / 'readme.md').write_bytes(b'old readme')
         real = updater.atomic_write
         def interrupted(path, data, mode):
-            if path.name == 'VERSION':
+            if path.name == 'version':
                 raise KeyboardInterrupt()
             return real(path, data, mode)
         with patch.object(updater, 'atomic_write', side_effect=interrupted), \
                 patch.object(updater, 'recover_interrupted', side_effect=RuntimeError('process killed')), \
                 self.assertRaisesRegex(RuntimeError, 'process killed'):
-            updater.apply_snapshot(self.root, {'README.md': b'new', 'VERSION': b'1.0.1\n'}, '1.0.1', COMMIT)
-        self.assertEqual((self.root / 'README.md').read_bytes(), b'new')
+            updater.apply_snapshot(self.root, {'readme.md': b'new', 'version': b'1.0.1\n'}, '1.0.1', COMMIT)
+        self.assertEqual((self.root / 'readme.md').read_bytes(), b'new')
         self.assertTrue((self.root / updater.JOURNAL).exists())
         updater.recover_interrupted(self.root)
-        self.assertEqual((self.root / 'README.md').read_bytes(), b'old readme')
-        self.assertFalse((self.root / 'VERSION').exists())
+        self.assertEqual((self.root / 'readme.md').read_bytes(), b'old readme')
+        self.assertFalse((self.root / 'version').exists())
         self.assertFalse((self.root / updater.JOURNAL).exists())
 
     def test_tampered_recovery_cannot_target_installed_server(self):
@@ -181,18 +181,18 @@ class PackageUpdates(unittest.TestCase):
         identifier = '20261105-120000-abcdef12'
         saved = self.root / '.update-backups' / identifier / 'files'
         saved.mkdir(parents=True)
-        for name in ('README.md', 'VERSION'):
+        for name in ('readme.md', 'version'):
             (self.root / name).write_bytes(b'new')
             (saved / name).write_bytes(b'old')
         (self.root / updater.JOURNAL).write_text(json.dumps({'backup': identifier,
-            'files': ['README.md', 'VERSION'], 'newFiles': []}))
+            'files': ['readme.md', 'version'], 'newFiles': []}))
         return saved
 
     def test_recovery_failure_retains_journal_and_can_be_retried(self):
         self.interrupted_receipt()
         real = updater.atomic_write
         def fail(path, data, mode):
-            if path.name == 'README.md':
+            if path.name == 'readme.md':
                 raise OSError('recovery disk error')
             return real(path, data, mode)
         with patch.object(updater, 'atomic_write', side_effect=fail), self.assertRaises(OSError):
@@ -200,16 +200,16 @@ class PackageUpdates(unittest.TestCase):
         self.assertTrue((self.root / updater.JOURNAL).exists())
         updater.recover_interrupted(self.root)
         self.assertFalse((self.root / updater.JOURNAL).exists())
-        self.assertEqual((self.root / 'README.md').read_bytes(), b'old')
-        self.assertEqual((self.root / 'VERSION').read_bytes(), b'old')
+        self.assertEqual((self.root / 'readme.md').read_bytes(), b'old')
+        self.assertEqual((self.root / 'version').read_bytes(), b'old')
 
     def test_missing_backup_prevents_any_recovery_writes(self):
         saved = self.interrupted_receipt()
-        (saved / 'VERSION').unlink()
+        (saved / 'version').unlink()
         with self.assertRaises(OSError):
             updater.recover_interrupted(self.root)
-        self.assertEqual((self.root / 'README.md').read_bytes(), b'new')
-        self.assertEqual((self.root / 'VERSION').read_bytes(), b'new')
+        self.assertEqual((self.root / 'readme.md').read_bytes(), b'new')
+        self.assertEqual((self.root / 'version').read_bytes(), b'new')
         self.assertTrue((self.root / updater.JOURNAL).exists())
 
     def test_download_failure_and_oversize_do_not_write_package_files(self):
@@ -224,7 +224,7 @@ class PackageUpdates(unittest.TestCase):
     def run_main(self, *arguments):
         # Exercise the Linux orchestration; real flock is a Mint acceptance check.
         fake_fcntl = types.SimpleNamespace(LOCK_EX=2, LOCK_NB=4, flock=lambda *args: None)
-        with patch.object(updater.sys, 'argv', ['Update.sh', str(self.root), *arguments]), \
+        with patch.object(updater.sys, 'argv', ['update.sh', str(self.root), *arguments]), \
                 patch.object(updater.sys, 'platform', 'linux'), \
                 patch.dict('sys.modules', {'fcntl': fake_fcntl}), \
                 patch.object(updater, 'refuse_running'):
@@ -233,7 +233,7 @@ class PackageUpdates(unittest.TestCase):
     def seed_package(self):
         (self.root / 'scripts').mkdir()
         (self.root / 'scripts/server_panel.py').write_bytes(b'old helper')
-        (self.root / 'Setup-Linux.sh').write_bytes(b'old setup')
+        (self.root / 'setup-linux.sh').write_bytes(b'old setup')
 
     def test_main_check_only_does_not_replace_package_files(self):
         self.seed_package()
@@ -250,7 +250,7 @@ class PackageUpdates(unittest.TestCase):
         with patch.object(updater, 'latest_commit', return_value=COMMIT), \
                 patch.object(updater, 'request_bytes', return_value=archive(snapshot())):
             self.run_main()
-        self.assertEqual((self.root / 'VERSION').read_text().strip(), '1.0.1')
+        self.assertEqual((self.root / 'version').read_text().strip(), '1.0.1')
         with patch.object(updater, 'request_bytes', side_effect=AssertionError('unexpected network')):
             self.run_main('--version')
 
@@ -262,17 +262,87 @@ class PackageUpdates(unittest.TestCase):
         (self.root / '.git').rmdir()
         busy = types.SimpleNamespace(LOCK_EX=2, LOCK_NB=4,
             flock=lambda *args: (_ for _ in ()).throw(BlockingIOError()))
-        with patch.object(updater.sys, 'argv', ['Update.sh', str(self.root)]), \
+        with patch.object(updater.sys, 'argv', ['update.sh', str(self.root)]), \
                 patch.object(updater.sys, 'platform', 'linux'), \
                 patch.dict('sys.modules', {'fcntl': busy}), \
                 patch.object(updater, 'latest_commit', side_effect=AssertionError('unexpected network')):
             with self.assertRaisesRegex(ValueError, 'already running'):
                 updater.main()
 
+    def test_legacy_package_updates_to_lowercase_without_removing_server(self):
+        (self.root / 'Setup-Linux.sh').write_bytes(b'old setup')
+        (self.root / 'VERSION').write_bytes(b'1.0.0\n')
+        private = self.root / 'CS15Server-Linux/cstrike/server.cfg'
+        private.parent.mkdir(parents=True)
+        private.write_bytes(b'private settings')
+        files = snapshot()
+        updater.apply_snapshot(self.root, files, '1.0.1', COMMIT)
+        self.assertEqual((self.root / 'setup-linux.sh').read_bytes(), files['setup-linux.sh'])
+        self.assertEqual((self.root / 'version').read_bytes(), files['version'])
+        self.assertEqual(private.read_bytes(), b'private settings')
+        if os.name == 'posix':
+            self.assertFalse((self.root / 'Setup-Linux.sh').exists())
+            self.assertFalse((self.root / 'VERSION').exists())
+        self.assertEqual(updater.apply_snapshot(self.root, files, '1.0.1', COMMIT), (None, 0))
+
+    def test_deleted_legacy_file_is_backed_up_and_failure_restores_it(self):
+        # Different basenames exercise deletion/rollback even on Windows,
+        # where original case variants alias the same physical file.
+        legacy = self.root / 'old-setup.sh'
+        legacy.write_bytes(b'legacy script')
+        real = updater.atomic_write
+        failed = False
+        def fail_after_removal(path, data, mode):
+            nonlocal failed
+            if path.name == updater.STATE and not failed:
+                failed = True
+                self.assertFalse(legacy.exists())
+                raise OSError('interrupted after legacy removal')
+            return real(path, data, mode)
+        with patch.object(updater, 'LEGACY_RENAMES', {'old-setup.sh': 'setup-linux.sh'}), \
+                patch.object(updater, 'atomic_write', side_effect=fail_after_removal), \
+                self.assertRaisesRegex(OSError, 'legacy removal'):
+            updater.apply_snapshot(self.root, snapshot(), '1.0.1', COMMIT)
+        self.assertEqual(legacy.read_bytes(), b'legacy script')
+        self.assertFalse((self.root / 'setup-linux.sh').exists())
+        self.assertFalse((self.root / updater.STATE).exists())
+        self.assertFalse((self.root / updater.JOURNAL).exists())
+
+    def test_legacy_removal_is_retained_in_successful_backup(self):
+        legacy = self.root / 'old-setup.sh'
+        legacy.write_bytes(b'legacy script')
+        with patch.object(updater, 'LEGACY_RENAMES', {'old-setup.sh': 'setup-linux.sh'}):
+            backup, count = updater.apply_snapshot(self.root, snapshot(), '1.0.1', COMMIT)
+        self.assertFalse(legacy.exists())
+        self.assertEqual((backup / 'files/old-setup.sh').read_bytes(), b'legacy script')
+        self.assertEqual(json.loads((backup / 'receipt.json').read_text())['removedFiles'], ['old-setup.sh'])
+
+    def test_recovery_accepts_a_journal_written_by_old_mixed_case_updater(self):
+        identifier = '20261105-120000-abcdef12'
+        backup = self.root / '.update-backups' / identifier / 'files'
+        backup.mkdir(parents=True)
+        (backup / 'README.md').write_bytes(b'old readme')
+        (backup / 'VERSION').write_bytes(b'1.0.0\n')
+        (self.root / 'README.md').write_bytes(b'new readme')
+        (self.root / 'VERSION').write_bytes(b'1.1.0\n')
+        (self.root / updater.JOURNAL).write_text(json.dumps({'backup': identifier,
+            'files': ['README.md', 'VERSION', 'Start-Panel.sh'], 'newFiles': ['Start-Panel.sh']}))
+        (self.root / 'Start-Panel.sh').write_bytes(b'new launcher')
+        updater.recover_interrupted(self.root)
+        self.assertEqual((self.root / 'README.md').read_bytes(), b'old readme')
+        self.assertEqual((self.root / 'VERSION').read_bytes(), b'1.0.0\n')
+        self.assertFalse((self.root / 'Start-Panel.sh').exists())
+
+    def test_unmapped_legacy_looking_file_is_not_removed(self):
+        custom = self.root / 'My-Server-Notes.txt'
+        custom.write_bytes(b'my notes')
+        updater.apply_snapshot(self.root, snapshot(), '1.0.1', COMMIT)
+        self.assertEqual(custom.read_bytes(), b'my notes')
+
     @unittest.skipUnless(os.name == 'posix', 'POSIX executable permissions')
     def test_new_shell_entry_points_are_executable(self):
         updater.apply_snapshot(self.root, snapshot(), '1.0.1', COMMIT)
-        self.assertTrue((self.root / 'Update.sh').stat().st_mode & stat.S_IXUSR)
+        self.assertTrue((self.root / 'update.sh').stat().st_mode & stat.S_IXUSR)
 
 
 if __name__ == '__main__':

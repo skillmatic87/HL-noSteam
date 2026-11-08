@@ -22,6 +22,7 @@ import threading
 import time
 import webbrowser
 from datetime import datetime, timezone
+from run_logged_server import new_log_file, ensure_launcher_logging
 
 PROJECT = Path(__file__).resolve().parents[1]
 FILES = {
@@ -175,16 +176,12 @@ def start_linux_console(command, root, log):
         fail('The server console requires script and env. Install util-linux and coreutils.')
     environment = os.environ.copy()
     if not environment.get('DISPLAY') and not environment.get('WAYLAND_DISPLAY'):
-        fail('Open Start-Panel.sh from the Linux desktop to display the server console.')
-    library_path = str(root) + (':' + environment['LD_LIBRARY_PATH'] if environment.get('LD_LIBRARY_PATH') else '')
-    # A running GNOME Terminal service can have a different environment. Pass
-    # the server libraries explicitly to HLDS, never to the GTK terminal itself.
-    hlds_command = 'exec ' + shlex.join([env_program, 'LD_LIBRARY_PATH=' + library_path, *command])
-    child = [env_program, 'SHELL=/bin/sh', recorder, '-q', '-f', '-e', '-a',
-             '-c', hlds_command, str(log)]
+        fail('Open start-panel.sh from the Linux desktop to display the server console.')
+    child = [sys.executable, str(PROJECT / 'scripts/run_logged_server.py'),
+             '--server', str(root), '--log-file', str(log), '--', *command]
     arguments = [terminal, '--window', '--wait', '--title=CS 1.5 Server',
                  '--working-directory=' + str(root), '--', *child]
-    log.parent.mkdir(exist_ok=True)
+    log.parent.mkdir(parents=True, exist_ok=True)
     descriptor = os.open(log, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
     with os.fdopen(descriptor, 'ab') as output:
         return subprocess.Popen(arguments, cwd=root, env=environment, stdin=subprocess.DEVNULL,
@@ -611,7 +608,6 @@ class Panel:
             self.ensure_stopped()
             command = self.arguments()
             self.endpoint()  # Never start an incorrectly bound local server.
-            log = self.path('_configurator/server-console.log')
             environment = os.environ.copy()
             if os.name == 'nt':
                 # Legacy Windows HLDS needs actual console input handles. A
@@ -623,6 +619,11 @@ class Panel:
                                                 creationflags=subprocess.CREATE_NEW_CONSOLE,
                                                 startupinfo=startup)
             else:
+                try:
+                    ensure_launcher_logging(self.root, self.path('Start-CS15.sh'))
+                    log = new_log_file(self.root)
+                except (OSError, ValueError) as error:
+                    fail(f'Console recording could not be prepared: {error}')
                 self.process = start_linux_console(command, self.root, log)
             return dict(started=True, pid=self.process.pid)
 
@@ -695,7 +696,7 @@ class Handler(BaseHTTPRequestHandler):
             self.guard(authenticated=self.path not in ('/', '/health'))
             panel = self.server.panel
             if self.path == '/':
-                html = (PROJECT / 'Configure-Server.html').read_text(encoding='utf-8')
+                html = (PROJECT / 'configure-server.html').read_text(encoding='utf-8')
                 boot = '<script>window.CS15Panel=' + json.dumps({'token': panel.token}).replace('<', '\\u003c') + ';</script>'
                 self.send(html.replace('<script>', boot + '\n<script>', 1).encode('utf-8'), content_type='text/html; charset=utf-8')
             elif self.path == '/health':
