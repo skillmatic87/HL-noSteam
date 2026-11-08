@@ -177,7 +177,7 @@ def start_linux_console(command, root, log):
     environment = os.environ.copy()
     if not environment.get('DISPLAY') and not environment.get('WAYLAND_DISPLAY'):
         fail('Open start-panel.sh from the Linux desktop to display the server console.')
-    child = [sys.executable, str(PROJECT / 'scripts/run_logged_server.py'),
+    child = [sys.executable, str(PROJECT / 'scripts/run_logged_server.py'), '--require-terminal',
              '--server', str(root), '--log-file', str(log), '--', *command]
     arguments = [terminal, '--window', '--wait', '--title=CS 1.5 Server',
                  '--working-directory=' + str(root), '--', *child]

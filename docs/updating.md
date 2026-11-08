@@ -34,7 +34,7 @@ Git checkouts are deliberately rejected. For a cloned repository, stop the panel
 
 ## Versions and ZIP filenames
 
-`version` contains the package version, currently **1.1.1**. The updater also records the exact 40-character commit ID in `.package-update.json` after a successful update. Several commits can share one package version; the commit identifies the exact snapshot.
+`version` contains the package version, currently **1.1.2**. The updater also records the exact 40-character commit ID in `.package-update.json` after a successful update. Several commits can share one package version; the commit identifies the exact snapshot.
 
 ```bash
 bash update.sh --version   # Local version, no download

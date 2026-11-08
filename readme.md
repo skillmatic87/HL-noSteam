@@ -4,7 +4,7 @@ A downloadable **Counter-Strike 1.5 dedicated server package for Windows LAN gam
 
 **Linux Mint:** this branch also includes the native Linux installer and launchers. See [Linux Mint setup and verification](docs/linux-mint.md). Install the documented 32-bit dependencies, then run `bash setup-linux.sh`. Initial startup, client connection and administrator access have been reported working; further acceptance checks remain open.
 
-**Version 1.1.1.** A fresh installation starts with 32 slots, StatsMe, bots, the admin plugins, Map Manager and Sank Sounds. Startup, administrator access, map changes/votes, sounds, custom-map downloads and bot play have been reported working. Ranking persistence, simultaneous sounds with two human clients, native Linux console recording and a 32-client load test remain open. See [test results](docs/testing.md).
+**Version 1.1.2.** A fresh installation starts with 32 slots, StatsMe, bots, the admin plugins, Map Manager and Sank Sounds. Startup, administrator access, map changes/votes, sounds, custom-map downloads and bot play have been reported working. Ranking persistence, simultaneous sounds with two human clients, native Mint/GNOME console behavior and a 32-client load test remain open. See [test results](docs/testing.md).
 
 Linux server starts now always record the console in a separate timestamped `logs/console/` file inside the installed server. See [permanent console recording](docs/linux-mint.md#permanent-console-recording). Maintained package filenames are lowercase; use `bash start-panel.sh` or `bash start-server.sh`. See [updating older ZIPs](docs/updating.md) before the first update to this version.
 

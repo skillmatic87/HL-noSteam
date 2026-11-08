@@ -1,3 +1,10 @@
+# v1.1.2 - Stop the Linux server when its console disappears
+
+- Require a foreground controlling terminal before launching HLDS; rejected starts leave an explanatory recording instead of silently starting without a console.
+- Translate terminal hangup to the termination signal supported by util-linux 2.39.3, retain the original signal in the log and bound shutdown of the owned recorder process.
+- Arm Linux parent-death protection in the recorded child before executing the regular foreground server/launcher. An expected-parent handshake prevents startup after premature recorder death. This covers the package's direct/exec launchers, not arbitrary daemonizing or privilege-changing executables.
+- Add native Linux tests with an actual outer PTY, interactive input, terminal loss, a TERM/HUP-ignoring fake server and early recorder death. GitHub's Ubuntu 24.04 job runs the suite independently of the Windows development host.
+
 # v1.1.1 - Permanent Linux console recording and lowercase package names
 
 - Panel, package starter and migrated installed launchers share one interactive util-linux recorder. Each start gets a unique private `logs/console/cs15-console-<UTC timestamp>-<id>.log`, continuously flushed output and an end marker with exit status when the recorder can finish normally.

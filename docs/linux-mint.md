@@ -91,6 +91,8 @@ Version 1.1.1 records every Linux start through `start-server.sh` and the panel 
 
 The first package/panel start backs up the installed `Start-CS15.sh` and adds a recording preamble, plus a local copy of the recorder. Subsequent direct launcher starts are recorded too. Backups live under `_configurator/recording-backups`; the existing HLDS command, game configuration and passwords are retained. A direct call to an old launcher before this first migration still has its old behavior. Fresh installations already include the recorder.
 
+Version 1.1.2 also requires the recorder itself to have a foreground controlling terminal. An inner HLDS PTY alone does not satisfy this check. Closing the server terminal requests shutdown, and the regular foreground HLDS process is tied to the owned recorder's lifetime. The recorder converts SIGHUP into SIGTERM for util-linux 2.39.3 and bounds its shutdown; there is no silent background fallback. Start from a visible terminal or use the panel's GNOME Terminal window.
+
 Recording requires Python 3.10+ and util-linux `script`; the panel additionally requires `gnome-terminal`. Install missing tools with `sudo apt install python3 util-linux gnome-terminal`. If recording cannot be prepared, the server is not silently started without it. No automatic restart hides the end of a failed session.
 
 After a crash, preserve the newest `.log` before investigating. Existing `_configurator/server-console.log` recordings remain where they were. Console output can contain credentials entered at the console or printed by plugins: keep raw logs private and redact secrets before sharing. These logs help diagnose the next crash; they do not by themselves identify or fix the current unknown cause.

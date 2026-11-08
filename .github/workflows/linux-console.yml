@@ -1,0 +1,38 @@
+name: Linux console lifecycle
+
+on:
+  push:
+    branches: [linux-mint-server]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux-console:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out the exact public repository commit
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+
+      - name: Show native console test dependencies
+        run: |
+          set -euo pipefail
+          python3 --version
+          script --version
+
+      - name: Check Linux entry-point syntax
+        run: bash -n setup-linux.sh start-server.sh start-panel.sh update.sh
+
+      - name: Run offline tests and real outer-terminal lifecycle regressions
+        run: python3 -m unittest discover -s scripts -p 'test_*.py' -v

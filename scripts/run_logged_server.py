@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Interactive Linux console recorder shared by the panel and all launchers."""
 import argparse
+import ctypes
 from datetime import datetime, timezone
 import json
 import os
@@ -14,9 +15,11 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 
 ACTIVE = 'CS15_RECORDING_ACTIVE'
 COMMAND = 'CS15_RECORDED_COMMAND'
+CONTROL = 'CS15_RECORDER_CONTROL'
 MARKER = '# cs15-console-recording-v1'
 
 
@@ -126,6 +129,58 @@ def ensure_launcher_logging(server, launcher):
         raise
 
 
+def show(message):
+    # The outer terminal can disappear before the final status is printed.
+    try:
+        print(message, flush=True)
+    except OSError:
+        pass
+
+
+def validate_terminal(log):
+    try:
+        if not os.isatty(0) or not os.isatty(1):
+            raise ValueError('Open the server from a visible interactive terminal.')
+        descriptor = os.open('/dev/tty', os.O_RDWR | getattr(os, 'O_NOCTTY', 0))
+        try:
+            if os.tcgetpgrp(descriptor) != os.getpgrp():
+                raise ValueError('The server must run in the foreground of its terminal.')
+        finally:
+            os.close(descriptor)
+    except (OSError, ValueError) as error:
+        message = f'An interactive controlling terminal is required: {error}'
+        append_record(log, f'\nCS15_SESSION_START time={stamp()}\nCS15_RECORDER_ERROR {message}\n'
+                      f'CS15_SESSION_END time={stamp()} exit_code=1\n')
+        raise ValueError(message) from error
+
+
+def protect_child_parent(control):
+    """Bind the exec'd server to its exact script parent, including startup races."""
+    deadline = time.monotonic() + 5
+    expected = None
+    while time.monotonic() < deadline:
+        descriptor = os.open(control, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
+        with os.fdopen(descriptor, 'rb') as source:
+            record = source.read(64)
+        if record:
+            if not re.fullmatch(rb'[1-9][0-9]*\n', record):
+                raise ValueError('Invalid recorder parent identity.')
+            expected = int(record)
+            break
+        time.sleep(0.01)
+    if expected is None:
+        raise ValueError('Timed out waiting for the recorder parent identity.')
+    if sys.platform != 'linux':
+        raise ValueError('The server parent-death protection requires Linux.')
+    libc = ctypes.CDLL(None, use_errno=True)
+    if libc.prctl(1, signal.SIGKILL, 0, 0, 0) != 0:  # PR_SET_PDEATHSIG
+        number = ctypes.get_errno()
+        raise OSError(number, os.strerror(number))
+    if os.getppid() != expected:
+        raise ValueError('The recorder parent exited before the server could start.')
+    Path(control).unlink()
+
+
 def run_recorded(server, command, log=None):
     recorder = shutil.which('script')
     if not recorder:
@@ -136,40 +191,76 @@ def run_recorded(server, command, log=None):
     if log.parent != server / 'logs' / 'console' or log.is_symlink() or not log.is_file():
         raise ValueError('The console log must be a regular file in this server\'s logs/console folder.')
     append_record(log, f'\nCS15_SESSION_START time={stamp()}\n')
-    print(f'Console recording: {log}', flush=True)
+    show(f'Console recording: {log}')
     environment = os.environ.copy()
     environment['SHELL'] = '/bin/sh'
     environment[COMMAND] = json.dumps(command)
+    control_fd, control_name = tempfile.mkstemp(prefix='.recorder-parent-', dir=log.parent)
+    environment[CONTROL] = control_name
     # Keep arguments out of script's COMMAND header (they can contain passwords).
     child = 'exec ' + shlex.join([sys.executable, str(Path(__file__).resolve()), '--child'])
     arguments = [recorder, '-q', '-f', '-e', '-a', '-c', child, str(log)]
     received = []
     previous = {}
     process = None
+    reaped = False
+    deadline = None
+    def recorder_signal(number):
+        # util-linux 2.39's PTY loop blocks SIGHUP without consuming it.
+        # Translate a lost outer terminal into its supported termination path.
+        return signal.SIGTERM if number == getattr(signal, 'SIGHUP', None) else number
     def forward(number, frame):
+        nonlocal deadline
         received.append(number)
+        if deadline is None:
+            deadline = time.monotonic() + 5
         if process is not None and process.poll() is None:
-            process.send_signal(number)
+            process.send_signal(recorder_signal(number))
     try:
         for number in (signal.SIGTERM, signal.SIGINT, getattr(signal, 'SIGHUP', signal.SIGTERM)):
             if number not in previous:
                 previous[number] = signal.signal(number, forward)
         # Inherit the visible terminal. No PIPEs or separate process group here.
         process = subprocess.Popen(arguments, cwd=server, env=environment)
+        with os.fdopen(control_fd, 'wb') as identity:
+            control_fd = None
+            identity.write((str(process.pid) + '\n').encode('ascii'))
+            identity.flush()
+            os.fsync(identity.fileno())
         if received and process.poll() is None:
-            process.send_signal(received[-1])
-        code = process.wait()
+            process.send_signal(recorder_signal(received[-1]))
+        while True:
+            try:
+                code = process.wait(timeout=0.25)
+                reaped = True
+                break
+            except subprocess.TimeoutExpired:
+                if deadline is not None and time.monotonic() >= deadline:
+                    process.kill()
+                    code = process.wait(timeout=3)
+                    reaped = True
+                    break
         status = 128 - code if code < 0 else code
         if received and status == 0:
             status = 128 + received[-1]
         append_record(log, f'\nCS15_SESSION_END time={stamp()} exit_code={status}' +
                       (f' signal={received[-1]}' if received else '') + '\n')
-        print(f'Server stopped: exit_code={status}; log: {log}', flush=True)
+        show(f'Server stopped: exit_code={status}; log: {log}')
         return status
     except OSError as error:
         append_record(log, f'\nCS15_RECORDER_ERROR time={stamp()} {error}\n')
         raise
     finally:
+        if control_fd is not None:
+            os.close(control_fd)
+        if process is not None and not reaped:
+            try:
+                process.terminate()
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=3)
+        Path(control_name).unlink(missing_ok=True)
         for number, handler in previous.items():
             signal.signal(number, handler)
 
@@ -179,6 +270,7 @@ def main():
         command = json.loads(os.environ.pop(COMMAND))
         if not isinstance(command, list) or not command or not all(isinstance(a, str) for a in command):
             raise ValueError('Invalid recorded server command.')
+        protect_child_parent(os.environ.pop(CONTROL))
         os.environ[ACTIVE] = '1'
         os.environ['LD_LIBRARY_PATH'] = str(Path.cwd()) + (
             ':' + os.environ['LD_LIBRARY_PATH'] if os.environ.get('LD_LIBRARY_PATH') else '')
@@ -186,18 +278,21 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--server', required=True, type=Path)
     parser.add_argument('--log-file', type=Path)
+    parser.add_argument('--require-terminal', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--launcher', type=Path, help='Back up and enable recording for this installed launcher')
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     server = args.server.expanduser().resolve()
     if not server.is_dir() or (server / '.install-incomplete').exists():
         raise ValueError('Server folder is missing or installation is incomplete.')
+    log = args.log_file or new_log_file(server)
+    validate_terminal(log)
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
     if args.launcher:
         launcher = args.launcher.expanduser().resolve()
         ensure_launcher_logging(server, launcher)
         command = ['bash', str(launcher), *command]
-    return run_recorded(server, command, args.log_file)
+    return run_recorded(server, command, log)
 
 
 if __name__ == '__main__':

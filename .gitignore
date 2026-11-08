@@ -17,6 +17,11 @@
 !/docs/
 !/scripts/
 !/content/
+!/.github/
+/.github/*
+!/.github/workflows/
+/.github/workflows/*
+!/.github/workflows/linux-console.yml
 
 # Keep local credentials, binaries, downloads and runtime data out of Git.
 **/.env
