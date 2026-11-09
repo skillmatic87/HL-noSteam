@@ -1,19 +1,21 @@
-COUNTER-STRIKE 1.5 LAN SERVER
+Half-Life Counter-Strike 1.5 Server Windows
+Edition: Non-Steam (historical WON/LAN server).
 
 Keep this extracted folder together. Start here:
 
-WINDOWS
+Half-Life Counter-Strike 1.5 Server Windows
   1. Setup.cmd          Install and configure the server (English yes/no wizard).
   2. Start-Server.cmd   Start the server in its console.
      Start-Panel.cmd    Open the English/German control panel instead.
                        Requires Python 3.10 or newer.
   3. Join with your compatible CS 1.5 client using HLSW or LAN Games.
 
-LINUX MINT (linux-mint-server branch / Linux release package)
-  First install the dependencies listed in docs/LINUX-MINT.md.
-  1. bash Setup-Linux.sh
-  2. bash Start-Server.sh
-     bash Start-Panel.sh   Open the local browser control panel instead.
+Half-Life Counter-Strike 1.5 Server Linux (separate linux-mint-server package)
+  Download the Linux branch ZIP or Linux release from the repository.
+  First install the dependencies in that package's docs/linux-mint.md.
+  1. bash setup-linux.sh
+  2. bash start-server.sh
+     bash start-panel.sh   Open the local browser control panel instead.
 
 The default installation is CS15Server on Windows, CS15Server-Linux on Linux.
 For another location:

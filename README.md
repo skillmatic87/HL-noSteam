@@ -1,10 +1,21 @@
-# HL-noSteam
+# Half-Life Counter-Strike 1.5 Server Windows
 
 A downloadable **Counter-Strike 1.5 dedicated server package for Windows LAN games with 32 player slots**.
 
-**Linux Mint:** the experimental installer is maintained in the [linux-mint-server branch](https://github.com/skillmatic87/HL-noSteam/tree/linux-mint-server). See its [setup and verification guide](https://github.com/skillmatic87/HL-noSteam/blob/linux-mint-server/docs/LINUX-MINT.md).
+**Half-Life Counter-Strike 1.5 Server Linux:** the experimental installer is maintained in the [linux-mint-server branch](https://github.com/skillmatic87/HL-noSteam/tree/linux-mint-server). See its [setup and verification guide](https://github.com/skillmatic87/HL-noSteam/blob/linux-mint-server/docs/linux-mint.md).
 
 **Version 1.1.0.** A fresh installation starts with 32 slots, StatsMe, bots, the admin plugins, Map Manager and Sank Sounds. Startup, administrator access, map changes/votes, sounds, custom-map downloads and bot play have been reported working. Ranking persistence, simultaneous sounds with two human clients and a 32-client load test remain open. See [test results](docs/TESTING.md).
+
+## Separate Steam and Non-Steam repositories
+
+| Edition | Repository | Platforms and source branch |
+| --- | --- | --- |
+| Counter-Strike 1.5 Non-Steam | [HL-noSteam](https://github.com/skillmatic87/HL-noSteam) | Windows: `main`; Linux Mint: `linux-mint-server` |
+| Counter-Strike 1.6 Steam | [Counter-Strike-1.6-Steam-Server-Linux](https://github.com/skillmatic87/Counter-Strike-1.6-Steam-Server-Linux) | Linux Mint: `main` |
+
+These are separate server packages. CS 1.5 uses the historical WON/LAN server and compatible clients. CS 1.6 uses SteamCMD, Steam clients and Steam-ID administration. Install each in its own directory; their engines, administrators and ranking files are not interchangeable. The Steam package currently supplies a Linux installer only.
+
+The Non-Steam repository keeps its historical `HL-noSteam` URL and ZIP folder names to preserve the archive identity expected by Linux package updaters. Follow the package update instructions when upgrading older ZIPs.
 
 ## Start here
 

@@ -1,4 +1,4 @@
-# Installation and operation
+# Half-Life Counter-Strike 1.5 Server Windows
 
 ## Release status
 

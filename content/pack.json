@@ -1216,8 +1216,9 @@
     {
       "source": "files/cstrike/addons/yapb/conf/lang/en_chat.cfg",
       "target": "cstrike/addons/yapb/conf/lang/en_chat.cfg",
-      "sha256": "99225fd481188f38e9cd9fff8f336193effb84e1a7c6569103709fbedd438580",
+      "sha256": "459822a223d7edf81f097baa75cc091ae8a261ab355cbb38069176f5bc7c9299",
       "replaceExistingSha256": [
+        "99225fd481188f38e9cd9fff8f336193effb84e1a7c6569103709fbedd438580",
         "aa69f0fdd64c796ef5b7efdd1ef1d6263f969b5b436836a1a2d0c396fb4b0b70"
       ]
     }
