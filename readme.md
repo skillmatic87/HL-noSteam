@@ -1,12 +1,23 @@
-# HL-noSteam
+# Half-Life Counter-Strike 1.5 Server Linux
 
-A downloadable **Counter-Strike 1.5 dedicated server package for Windows LAN games with 32 player slots**.
+A native **Counter-Strike 1.5 Non-Steam dedicated server package for Linux Mint LAN games with 32 player slots**.
 
 **Linux Mint:** this branch also includes the native Linux installer and launchers. See [Linux Mint setup and verification](docs/linux-mint.md). Install the documented 32-bit dependencies, then run `bash setup-linux.sh`. Initial startup, client connection and administrator access have been reported working; further acceptance checks remain open.
 
 **Version 1.1.2.** A fresh installation starts with 32 slots, StatsMe, bots, the admin plugins, Map Manager and Sank Sounds. Startup, administrator access, map changes/votes, sounds, custom-map downloads and bot play have been reported working. Ranking persistence, simultaneous sounds with two human clients, native Mint/GNOME console behavior and a 32-client load test remain open. See [test results](docs/testing.md).
 
 Linux server starts now always record the console in a separate timestamped `logs/console/` file inside the installed server. See [permanent console recording](docs/linux-mint.md#permanent-console-recording). Maintained package filenames are lowercase; use `bash start-panel.sh` or `bash start-server.sh`. See [updating older ZIPs](docs/updating.md) before the first update to this version.
+
+## Separate Steam and Non-Steam repositories
+
+| Edition | Repository | Platforms and source branch |
+| --- | --- | --- |
+| Counter-Strike 1.5 Non-Steam | [HL-noSteam](https://github.com/skillmatic87/HL-noSteam) | Windows: `main`; Linux Mint: `linux-mint-server` |
+| Counter-Strike 1.6 Steam | [Counter-Strike-1.6-Steam-Server-Linux](https://github.com/skillmatic87/Counter-Strike-1.6-Steam-Server-Linux) | Linux Mint: `main` |
+
+These are separate server packages. CS 1.5 uses the historical WON/LAN server and compatible clients. CS 1.6 uses SteamCMD, Steam clients and Steam-ID administration. Install each in its own directory; their engines, administrators and ranking files are not interchangeable. The Steam package currently supplies a Linux installer only.
+
+The Non-Steam repository keeps its historical `HL-noSteam` URL and ZIP folder names to preserve the archive identity expected by Linux package updaters. Follow the package update instructions when upgrading older ZIPs.
 
 ## Start here
 
@@ -24,7 +35,11 @@ On Linux, this branch supplies the matching `setup-linux.sh`, `start-server.sh` 
 
 For an existing Linux ZIP package, stop the server/panel helper and run `bash update.sh`. See [updating and versioned downloads](docs/updating.md), including the one-time script download for older packages.
 
-## Install
+## Install on Linux
+
+Follow [Linux setup and dependencies](docs/linux-mint.md), download the [Linux branch ZIP](https://github.com/skillmatic87/HL-noSteam/archive/refs/heads/linux-mint-server.zip), then run `bash setup-linux.sh` and `bash start-server.sh`.
+
+## Install on Windows
 
 1. [Download the repository ZIP](https://github.com/skillmatic87/HL-noSteam/archive/refs/heads/main.zip) and extract it into a writable folder.
 2. Run `setup.cmd`. The first setup downloads about 300 MB of original components and verifies every file against its SHA-256 checksum.

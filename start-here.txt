@@ -1,4 +1,5 @@
-COUNTER-STRIKE 1.5 LAN SERVER
+Half-Life Counter-Strike 1.5 Server Linux
+Edition: Non-Steam (historical WON/LAN server).
 
 Keep this extracted folder together. Start here:
 
